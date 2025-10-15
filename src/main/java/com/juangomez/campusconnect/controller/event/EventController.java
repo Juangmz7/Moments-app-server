@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/event")
@@ -21,23 +22,23 @@ public class EventController {
     }
 
     @GetMapping("/participants/{id}")
-    public ResponseEntity<EventParticipant> getEventParticipants(@PathVariable int id) {
-        return ResponseEntity.ok(new EventParticipant());
+    public ResponseEntity<List<EventParticipant>> getEventParticipants(@PathVariable int id) {
+        return ResponseEntity.ok(List.of(new EventParticipant()));
     }
 
     @GetMapping
-    public ResponseEntity<EventResponse> getEventsByTag(@RequestParam EventTag tag) {
-        return ResponseEntity.ok(new EventResponse());
+    public ResponseEntity<List<EventResponse>> getEventsByTag(@RequestParam EventTag tag) {
+        return ResponseEntity.ok(List.of(new EventResponse()));
     }
 
     @GetMapping
-    public ResponseEntity<EventResponse> getEventsByDate(@RequestParam Date eventDate) {
-        return ResponseEntity.ok(new EventResponse());
+    public ResponseEntity<List<EventResponse>> getEventsByDate(@RequestParam Date eventDate) {
+        return ResponseEntity.ok(List.of(new EventResponse()));
     }
 
     @GetMapping
-    public ResponseEntity<EventResponse> getEventsByLocation(@RequestParam EventLocation location) {
-        return ResponseEntity.ok(new EventResponse());
+    public ResponseEntity<List<EventResponse>> getEventsByLocation(@RequestParam EventLocation location) {
+        return ResponseEntity.ok(List.of(new EventResponse()));
     }
 
     @PostMapping
