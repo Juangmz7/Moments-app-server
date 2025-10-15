@@ -1,4 +1,14 @@
 package com.juangomez.campusconnect.model.entity.event;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class EventLocation {
+
+    private String city;
+
+    private String placeName;
+
 }

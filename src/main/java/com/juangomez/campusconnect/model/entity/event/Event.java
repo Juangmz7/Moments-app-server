@@ -1,5 +1,6 @@
-package com.juangomez.campusconnect.entity.event;
+package com.juangomez.campusconnect.model.entity.event;
 
+import com.juangomez.campusconnect.model.enums.EventTag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +18,11 @@ public class Event {
 
     private String name;
 
-    private String eventBio;
+    private EventBio eventBio;
 
     private EventOrganiser organiser;
 
-    private String location;
+    private EventLocation location;
 
     private List<EventParticipant> participants;
 

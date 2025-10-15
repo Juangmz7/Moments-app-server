@@ -1,4 +1,4 @@
-package com.juangomez.campusconnect.entity.event;
+package com.juangomez.campusconnect.model.entity.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
