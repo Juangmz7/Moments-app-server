@@ -1,42 +1,16 @@
-package com.juangomez.campusconnect.infrastructure.mappers.event;
+package com.mbproyect.campusconnect.infrastructure.mappers.event;
 
-import com.juangomez.campusconnect.dto.event.EventRequest;
-import com.juangomez.campusconnect.dto.event.EventResponse;
-import com.juangomez.campusconnect.model.entity.event.Event;
+import com.mbproyect.campusconnect.dto.event.request.EventRequest;
+import com.mbproyect.campusconnect.dto.event.response.EventResponse;
+import com.mbproyect.campusconnect.model.entity.event.*;
+import com.mbproyect.campusconnect.model.enums.EventStatus;
 
 import java.util.HashSet;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class EventMapper {
 
-    /***
-     * Converts an EventRequest (coming from the client) into an Event entity.
-     */
-    public static Event fromRequest(EventRequest request) {
-        if (request == null) {
-            return null;
-        }
-
-        Event event = new Event();
-
-        // Assign a new UUID (if not generated automatically in DB)
-        event.setEventId(UUID.randomUUID());
-
-        event.setName(request.getName());
-        event.setEventBio(request.getEventBio());
-        event.setOrganiser(request.getOrganiser());
-        event.setLocation(request.getLocation());
-        event.setDate(request.getDate());
-
-        // Tags are not in EventRequest yet (optional)
-        event.setEventTag(new HashSet<>());
-
-        return event;
-    }
-
-    /***
-     * Converts an Event entity into an EventResponse (for returning to the client).
+    /**
+     * Converts an Event entity into an EventResponse DTO.
      */
     public static EventResponse toResponse(Event event) {
         if (event == null) {
@@ -46,15 +20,35 @@ public class EventMapper {
         EventResponse response = new EventResponse();
         response.setEventId(event.getEventId());
         response.setName(event.getName());
-        response.setEventBio(event.getEventBio());
-        response.setOrganiser(event.getOrganiser());
+        response.setEventBio(EventBioMapper.toResponse(event.getEventBio()));
+        response.setOrganiser(EventOrganiserMapper.toResponse(event.getOrganiser()));
+        System.out.println("3");
         response.setLocation(event.getLocation());
-        response.setDate(event.getDate());
+        response.setStartDate(event.getStartDate());
+        response.setEndDate(event.getEndDate());
+        System.out.println("4");
 
-        if (event.getEventTag() != null) {
-            response.setEventTag(event.getEventTag().stream().collect(Collectors.toSet()));
+        System.out.println(response);
+        return response;
+    }
+
+    /**
+     * Converts an EventRequest DTO into an Event entity.
+     */
+    public static Event fromRequest(EventRequest request) {
+        if (request == null) {
+            return null;
         }
 
-        return response;
+        Event event = new Event();
+        event.setName(request.getName());
+        event.setEventBio(EventBioMapper.fromRequest(request.getEventBio()));
+        event.setOrganiser(EventOrganiserMapper.fromRequest(request.getOrganiser(), new HashSet<>()));
+        event.setLocation(request.getLocation());
+        event.setStartDate(request.getStarDate());
+        event.setEndDate(request.getEndDate());
+        event.setEventStatus(EventStatus.ACTIVE); // default status (can be changed later)
+
+        return event;
     }
 }

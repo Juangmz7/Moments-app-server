@@ -1,8 +1,9 @@
-package com.juangomez.campusconnect.infrastructure.mappers.user;
+package com.mbproyect.campusconnect.infrastructure.mappers.user;
 
-import com.juangomez.campusconnect.dto.user.UserProfileResponse;
-import com.juangomez.campusconnect.model.entity.user.UserProfile;
-import com.juangomez.campusconnect.model.entity.user.UserLocation;
+import com.mbproyect.campusconnect.dto.user.request.UserProfileRequest;
+import com.mbproyect.campusconnect.dto.user.response.UserProfileResponse;
+import com.mbproyect.campusconnect.model.entity.user.UserProfile;
+import com.mbproyect.campusconnect.model.entity.user.UserLocation;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,7 @@ public class UserProfileMapper {
         UserProfileResponse response = new UserProfileResponse();
         response.setUserName(userProfile.getUserName());
         response.setNationality(userProfile.getNationality());
+        response.setAge(userProfile.getAge());
         response.setLanguages(
                 userProfile.getLanguages() != null ? new HashSet<>(userProfile.getLanguages()) : Set.of()
         );
@@ -27,9 +29,34 @@ public class UserProfileMapper {
                 userProfile.getInterests() != null ? new HashSet<>(userProfile.getInterests()) : Set.of()
         );
         response.setUserLocation(copyLocation(userProfile.getUserLocation()));
+        response.setId(userProfile.getId());
 
         return response;
     }
+
+    /**
+     * Converts a UserProfileRequest DTO into a UserProfile entity.
+     */
+    public static UserProfile fromRequest(UserProfileRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUserName(request.getUserName());
+        userProfile.setNationality(request.getNationality());
+        userProfile.setAge(request.getAge());
+        userProfile.setLanguages(
+                request.getLanguages() != null ? new HashSet<>(request.getLanguages()) : new HashSet<>()
+        );
+        userProfile.setInterests(
+                request.getInterests() != null ? new HashSet<>(request.getInterests()) : new HashSet<>()
+        );
+        userProfile.setUserLocation(copyLocation(request.getUserLocation()));
+
+        return userProfile;
+    }
+
 
     /**
      * Copies the nested UserLocation object safely.
