@@ -1,18 +1,26 @@
-package com.juangomez.campusconnect.serviceimpl;
+package com.mbproyect.campusconnect.serviceimpl;
 
-import com.juangomez.campusconnect.config.exceptions.event.EventNotFoundException;
-import com.juangomez.campusconnect.dto.event.EventRequest;
-import com.juangomez.campusconnect.dto.event.EventResponse;
-import com.juangomez.campusconnect.infrastructure.mappers.event.EventBioMapper;
-import com.juangomez.campusconnect.infrastructure.mappers.event.EventMapper;
-import com.juangomez.campusconnect.model.entity.event.Event;
-import com.juangomez.campusconnect.model.entity.event.EventBio;
-import com.juangomez.campusconnect.model.enums.InterestTag;
-import com.juangomez.campusconnect.infrastructure.repository.EventRepository;
-import com.juangomez.campusconnect.service.EventService;
+import com.mbproyect.campusconnect.config.exceptions.event.EventCancelledException;
+import com.mbproyect.campusconnect.config.exceptions.event.EventNotFoundException;
+import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
+import com.mbproyect.campusconnect.dto.event.request.EventRequest;
+import com.mbproyect.campusconnect.dto.event.response.EventResponse;
+import com.mbproyect.campusconnect.infrastructure.mappers.event.EventBioMapper;
+import com.mbproyect.campusconnect.infrastructure.mappers.event.EventMapper;
+import com.mbproyect.campusconnect.infrastructure.mappers.event.EventOrganiserMapper;
+import com.mbproyect.campusconnect.model.entity.event.Event;
+import com.mbproyect.campusconnect.model.entity.event.EventBio;
+import com.mbproyect.campusconnect.model.enums.EventStatus;
+import com.mbproyect.campusconnect.model.enums.InterestTag;
+import com.mbproyect.campusconnect.infrastructure.repository.EventRepository;
+import com.mbproyect.campusconnect.service.EventService;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +42,35 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toSet());
     }
 
+    private void validateEventDate(LocalDateTime start, LocalDateTime end) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (start.isBefore(now)) {
+            throw new InvalidDateException("Start date must be after now");
+        }
+
+        if (end.isBefore(now)) {
+            throw new InvalidDateException("End date must be after now");
+        }
+
+        // Check if the after date is not before the start
+        if (end.isBefore(start)) {
+            throw new InvalidDateException("End date must be after start date");
+        }
+
+        long duration = Duration.between(start, end).toMinutes();
+
+        if (duration < 5) {
+            throw new InvalidDateException("Events must have a minimum of 5 minutes");
+        }
+
+        if (duration > 24 * 60) {
+            throw new InvalidDateException("Event duration cannot exceed 24 hours");
+        }
+    }
+
     @Override
+    @Transactional(readOnly = true)
     public EventResponse getEventById(UUID id) {
         Event event = eventRepository.getEventByEventId(id);
 
@@ -43,21 +79,26 @@ public class EventServiceImpl implements EventService {
             throw new EventNotFoundException("Event not found");
         }
 
+        if (event.getEventStatus().equals(EventStatus.CANCELLED)) {
+            throw new EventCancelledException("Event " + id +" was cancelled");
+        }
+
         log.info("Returning event with id {}", id);
+
         return EventMapper.toResponse(event);  // Parse event to event
     }
 
     @Override
     public Set<EventResponse> getEventsByTag(Set<InterestTag> tags) {
-        Set<Event> events = eventRepository.findByEventTag(tags);
+        Set<Event> events = eventRepository.getEventsByTags(tags, EventStatus.ACTIVE);
 
         log.info("Returning events with interest tags:  {}", tags);
         return eventSetToResponse(events);
     }
 
     @Override
-    public List<EventResponse> getEventsByDateAscending(Date eventDate) {
-        Set<Event> events = eventRepository.findByDate(eventDate);
+    public List<EventResponse> getEventsByDateAscending(LocalDateTime eventDate) {
+        List<Event> events = eventRepository.getUpcomingEvents(eventDate, EventStatus.ACTIVE);
 
         if (events.isEmpty()) return List.of();
 
@@ -79,8 +120,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse createEvent(EventRequest eventRequest) {
-        Event event = EventMapper.fromRequest(eventRequest);
 
+        validateEventDate(
+                eventRequest.getStarDate(),
+                eventRequest.getEndDate()
+        );
+
+        Event event = EventMapper.fromRequest(eventRequest);
         eventRepository.save(event);
 
         return this.getEventById(event.getEventId());
@@ -90,7 +136,9 @@ public class EventServiceImpl implements EventService {
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
         //  Find existing event or throw exception if not found
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotFoundException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new EventNotFoundException(
+                        "Event not found with id: " + eventId
+                ));
 
         boolean hasChanged = false; // Flag to track if any field was modified
 
@@ -108,7 +156,13 @@ public class EventServiceImpl implements EventService {
         }
 
         if (!Objects.equals(event.getOrganiser(), eventRequest.getOrganiser())) {
-            event.setOrganiser(eventRequest.getOrganiser());
+
+            Set<Event> events = new HashSet<>(eventRepository
+                    .findAllById(eventRequest.getOrganiser().getEventsIds()));
+
+            event.setOrganiser(
+                    EventOrganiserMapper.fromRequest(eventRequest.getOrganiser(), events)
+            );
             hasChanged = true;
         }
 
@@ -117,22 +171,29 @@ public class EventServiceImpl implements EventService {
             hasChanged = true;
         }
 
-        if (!Objects.equals(event.getDate(), eventRequest.getDate())) {
-            event.setDate(eventRequest.getDate());
+        if (!Objects.equals(event.getStartDate(), eventRequest.getStarDate())) {
+            event.setStartDate(eventRequest.getStarDate());
             hasChanged = true;
         }
 
-        // Update event tags only if they exist and changed
-        if (eventRequest.getEventBio() != null &&
-                !Objects.equals(event.getEventTag(), eventRequest.getEventTag())) {
-            event.setEventTag(eventRequest.getEventTag());
+        if (!Objects.equals(event.getEndDate(), eventRequest.getEndDate())) {
+            event.setStartDate(eventRequest.getEndDate());
             hasChanged = true;
         }
 
         //  Persist changes only if something was updated
         if (hasChanged) {
+
+            validateEventDate(
+                    eventRequest.getStarDate(),
+                    eventRequest.getEndDate()
+            );
+
             log.info("Updating event {} due to modified fields", eventId);
             event = eventRepository.save(event);
+
+            // TODO: Notify participants sending email
+
         } else {
             log.info("No changes detected for event {}", eventId);
         }
@@ -143,9 +204,14 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(UUID eventId) {
-        getEventById(eventId);
-        eventRepository.deleteById(eventId);
-        log.info("Event with id {} deleted", eventId);
+        Event event = eventRepository.getEventByEventId(eventId);
+
+        // Update event state to cancelled
+        event.setEventStatus(EventStatus.CANCELLED);
+
+        log.info("Event with id {} cancelled", eventId);
+
+        // TODO: Notify participants sending email
     }
 
 }
