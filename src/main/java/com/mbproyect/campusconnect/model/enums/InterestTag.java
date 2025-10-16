@@ -1,6 +1,6 @@
-package com.juangomez.campusconnect.model.enums;
+package com.mbproyect.campusconnect.model.enums;
 
-//@Enumerated(EnumType.STRING)
+
 public enum InterestTag {
 
     // Lifestyle & Wellbeing

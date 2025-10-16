@@ -1,4 +1,6 @@
 package com.mbproyect.campusconnect.model.enums;
 
-public class EventStatus {
+public enum EventStatus {
+    ACTIVE,
+    CANCELLED
 }
