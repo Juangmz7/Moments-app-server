@@ -1,5 +1,6 @@
-package com.juangomez.campusconnect.dto.auth;
+package com.mbproyect.campusconnect.dto.auth;
 
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,6 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserAuthRequest {
 
+    @Email
     private String email;
 
 }

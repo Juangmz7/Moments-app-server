@@ -1,4 +1,21 @@
 package com.mbproyect.campusconnect.dto.event.response;
 
+import com.mbproyect.campusconnect.dto.user.response.UserProfileResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
+import java.util.UUID;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class EventOrganiserResponse {
+
+    private UUID id;
+
+    private UserProfileResponse userProfile;
+
+    private Set<UUID> eventsIds;
 }

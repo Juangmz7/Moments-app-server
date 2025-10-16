@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.dto.event;
+package com.mbproyect.campusconnect.dto.event.response;
 
 import com.mbproyect.campusconnect.model.entity.event.EventBio;
 import com.mbproyect.campusconnect.model.entity.event.EventLocation;
@@ -21,16 +21,14 @@ public class EventResponse {
 
     private String name;
 
-    private EventBio eventBio;
+    private EventBioResponse eventBio;
 
-    private EventOrganiser organiser;
+    private EventOrganiserResponse organiser;
 
     private EventLocation location;
 
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
-
-    private Set<InterestTag> eventTag;
 
 }

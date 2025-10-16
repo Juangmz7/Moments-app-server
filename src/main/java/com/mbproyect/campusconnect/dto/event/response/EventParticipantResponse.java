@@ -1,20 +1,21 @@
-package com.mbproyect.campusconnect.dto.event;
+package com.mbproyect.campusconnect.dto.event.response;
 
-import com.mbproyect.campusconnect.dto.user.UserProfileResponse;
-import com.mbproyect.campusconnect.model.entity.event.Event;
+import com.mbproyect.campusconnect.dto.user.response.UserProfileResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventParticipantResponse {
 
-    private String username;
+    private UUID id;
 
-    private UserProfileResponse userProfileResponse;
+    private UserProfileResponse userProfile;
 
-    private Event event;
-
+    private UUID eventId;
+    private String eventName;
 }

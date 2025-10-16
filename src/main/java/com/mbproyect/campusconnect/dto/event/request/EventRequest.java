@@ -1,8 +1,7 @@
-package com.mbproyect.campusconnect.dto.event;
+package com.mbproyect.campusconnect.dto.event.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mbproyect.campusconnect.model.entity.event.EventLocation;
-import com.mbproyect.campusconnect.model.entity.event.EventOrganiser;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -24,7 +23,7 @@ public class EventRequest {
     private EventBioRequest eventBio;
 
     @NotNull
-    private EventOrganiser organiser;
+    private EventOrganiserRequest organiser;
 
     @NotNull
     private EventLocation location;

@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.dto.event;
+package com.mbproyect.campusconnect.dto.event.request;
 
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import jakarta.validation.constraints.NotNull;
