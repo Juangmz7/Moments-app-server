@@ -1,4 +1,27 @@
 package com.mbproyect.campusconnect.model.entity.chat;
 
-public class Chat {
+import com.mbproyect.campusconnect.model.entity.event.Event;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.Set;
+import java.util.UUID;
+
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+public class EventChat {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @OneToOne
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
+
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChatMessage> messages;
+
 }

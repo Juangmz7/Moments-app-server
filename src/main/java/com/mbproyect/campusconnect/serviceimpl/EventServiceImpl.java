@@ -1,7 +1,5 @@
 package com.mbproyect.campusconnect.serviceimpl;
 
-import com.mbproyect.campusconnect.config.exceptions.event.EventCancelledException;
-import com.mbproyect.campusconnect.config.exceptions.event.EventNotFoundException;
 import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;
@@ -15,7 +13,6 @@ import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
 import com.mbproyect.campusconnect.service.EventService;
 import com.mbproyect.campusconnect.shared.validation.EventValidator;
-import com.mbproyect.campusconnect.shared.validation.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -29,16 +26,13 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
-    private final UserValidator userValidator;
     private final EventValidator eventValidator;
 
 
     public EventServiceImpl(
             EventRepository eventRepository,
-            UserValidator userValidator,
             EventValidator eventValidator) {
         this.eventRepository = eventRepository;
-        this.userValidator = userValidator;
         this.eventValidator = eventValidator;
     }
 

@@ -1,5 +1,6 @@
 package com.mbproyect.campusconnect.model.entity.event;
 
+import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,9 @@ public class Event {
 
     @Embedded
     private EventLocation location;
+
+    @OneToOne(mappedBy = "event")
+    private EventChat eventChat;
 
     /**
      * Foreign key already exists in participant table

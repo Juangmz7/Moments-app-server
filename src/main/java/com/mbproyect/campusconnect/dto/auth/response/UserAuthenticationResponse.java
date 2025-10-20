@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.dto.auth;
+package com.mbproyect.campusconnect.dto.auth.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

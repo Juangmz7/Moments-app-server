@@ -1,7 +1,7 @@
 package com.mbproyect.campusconnect.controller.auth;
 
-import com.mbproyect.campusconnect.dto.auth.UserAuthRequest;
-import com.mbproyect.campusconnect.dto.auth.UserAuthenticationResponse;
+import com.mbproyect.campusconnect.dto.auth.request.UserAuthRequest;
+import com.mbproyect.campusconnect.dto.auth.response.UserAuthenticationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

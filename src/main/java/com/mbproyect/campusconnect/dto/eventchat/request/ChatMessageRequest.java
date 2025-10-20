@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.dto.eventchat;
+package com.mbproyect.campusconnect.dto.eventchat.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
