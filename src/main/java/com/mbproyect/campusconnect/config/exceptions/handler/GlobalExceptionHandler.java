@@ -3,9 +3,7 @@ package com.mbproyect.campusconnect.config.exceptions.handler;
 
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.mbproyect.campusconnect.config.exceptions.event.EventCancelledException;
-import com.mbproyect.campusconnect.config.exceptions.event.EventNotFoundException;
-import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
+import com.mbproyect.campusconnect.config.exceptions.event.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +34,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             InvalidFormatException.class,
+            ParticipantAlreadyExistsException.class,
             MethodArgumentNotValidException.class,      // Json body validation
             ConstraintViolationException.class,         // Request parameters validation
             MethodArgumentTypeMismatchException.class,   // When cannot convert a request parameter to object
@@ -63,7 +62,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             EventNotFoundException.class,
-            EventCancelledException.class
+            EventCancelledException.class,
+            UserNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFoundException(RuntimeException exception, WebRequest request) {
         return createErrorResponseEntity(exception, request, HttpStatus.NOT_FOUND);
