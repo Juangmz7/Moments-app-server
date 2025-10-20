@@ -1,6 +1,8 @@
 -- ======================================
 -- DROP DEPENDENT TABLES FIRST (optional for full reset)
 -- ======================================
+-- DROP TABLE IF EXISTS chat_message CASCADE;
+-- DROP TABLE IF EXISTS event_chat CASCADE;
 -- DROP TABLE IF EXISTS event_participant CASCADE;
 -- DROP TABLE IF EXISTS event_bio_tags CASCADE;
 -- DROP TABLE IF EXISTS user_bio_tags CASCADE;
@@ -50,6 +52,7 @@ VALUES
     ('bbbb2222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob@mail.com', '22222222-2222-2222-2222-222222222222', true)
     ON CONFLICT (user_id) DO NOTHING;
 
+
 -- ======================================
 -- EVENTS
 -- ======================================
@@ -92,4 +95,26 @@ INSERT INTO event_participant (id, user_profile_id, event_id)
 VALUES
     ('99999999-9999-9999-9999-999999999999', '11111111-1111-1111-1111-111111111111', '88888888-8888-8888-8888-888888888888'),
     ('aaaa9999-aaaa-9999-aaaa-aaaaaaaa9999', '22222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777')
+    ON CONFLICT (id) DO NOTHING;
+
+
+-- ======================================
+-- EVENT CHATS
+-- ======================================
+INSERT INTO event_chat (id, event_id)
+VALUES
+    ('cccccccc-cccc-cccc-cccc-cccccccccccc', '77777777-7777-7777-7777-777777777777'), -- AI Workshop
+    ('dddddddd-dddd-dddd-dddd-dddddddddddd', '88888888-8888-8888-8888-888888888888')  -- Live Music Night
+    ON CONFLICT (id) DO NOTHING;
+
+
+-- ======================================
+-- CHAT MESSAGES
+-- ======================================
+INSERT INTO chat_message (id, chat_id, sender_id, encrypted_text, sent_at)
+VALUES
+    ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '11111111-1111-1111-1111-111111111111', 'SGVsbG8gYWxsIQ==', '2025-10-20T18:10:00'),
+    ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'V2VsY29tZSB0byB0aGUgY2hhdCE=', '2025-10-20T18:11:00'),
+    ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '11111111-1111-1111-1111-111111111111', 'U2VlaW5nIHlvdSBhdCB0aGUgbXVzaWMgbmlnaHQh', '2025-10-22T20:10:00'),
+    ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'WWVhaCwgbGV0J3MganVuIG9uIHN0YWdlIQ==', '2025-10-22T20:12:00')
     ON CONFLICT (id) DO NOTHING;
