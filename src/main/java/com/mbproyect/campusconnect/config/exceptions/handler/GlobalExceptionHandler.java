@@ -9,6 +9,8 @@ import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -47,10 +49,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            IllegalStateException.class,
+            BadCredentialsException.class,
     })
     public ResponseEntity<ErrorResponse> handleAuthenticationException(RuntimeException exception, WebRequest request) {
         return createErrorResponseEntity(exception, request, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({
+            AccessDeniedException.class,
+            IllegalStateException.class,
+    })
+    public ResponseEntity<ErrorResponse> handlerAuthorisationException(RuntimeException exception, WebRequest request) {
+        return createErrorResponseEntity(exception, request, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({
