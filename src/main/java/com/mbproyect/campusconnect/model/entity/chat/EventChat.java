@@ -4,6 +4,7 @@ import com.mbproyect.campusconnect.model.entity.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,6 +23,6 @@ public class EventChat {
     private Event event;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ChatMessage> messages;
+    private Set<ChatMessage> messages = new HashSet<>();
 
 }
