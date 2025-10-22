@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,5 +24,5 @@ public class EventOrganiser {
     private UserProfile userProfile;
 
     @OneToMany(mappedBy = "organiser", fetch = FetchType.EAGER)
-    private Set<Event> events;
+    private Set<Event> events = new HashSet<>();
 }
