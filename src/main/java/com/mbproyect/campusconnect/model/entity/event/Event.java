@@ -10,16 +10,15 @@ import java.util.Set;
 import java.util.UUID;
 
 
-@Entity
-@Data
-@AllArgsConstructor
+@Getter @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "chat")
-@ToString(exclude = "chat")
+@AllArgsConstructor
+@Entity
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID eventId;
 
     private String name;

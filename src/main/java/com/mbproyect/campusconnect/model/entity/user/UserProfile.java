@@ -2,14 +2,13 @@ package com.mbproyect.campusconnect.model.entity.user;
 
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Set;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +16,7 @@ public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID id;
 
     private String userName;

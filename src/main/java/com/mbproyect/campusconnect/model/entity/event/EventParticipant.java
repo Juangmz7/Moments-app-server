@@ -2,13 +2,12 @@ package com.mbproyect.campusconnect.model.entity.event;
 
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -16,6 +15,7 @@ public class EventParticipant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @ManyToOne

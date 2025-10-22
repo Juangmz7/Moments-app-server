@@ -7,14 +7,15 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-@Entity
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 public class ChatMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
