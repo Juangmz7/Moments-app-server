@@ -11,6 +11,7 @@ import com.mbproyect.campusconnect.model.entity.event.EventBio;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
+import com.mbproyect.campusconnect.service.chat.EventChatService;
 import com.mbproyect.campusconnect.service.event.EventService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,16 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
-
+    private final EventChatService eventChatService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
-            EventValidator eventValidator) {
+            EventValidator eventValidator,
+            EventChatService eventChatService
+    ) {
         this.eventRepository = eventRepository;
         this.eventValidator = eventValidator;
+        this.eventChatService = eventChatService;
     }
 
     private Set<EventResponse> eventSetToResponse (Set<Event> events) {
@@ -121,12 +125,16 @@ public class EventServiceImpl implements EventService {
         Event event = EventMapper.fromRequest(eventRequest);
         eventRepository.save(event);
 
+        log.info("Event created");
+        eventChatService.createChat(event);
+
         return this.getEventById(event.getEventId());
     }
 
     @Override
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
         //  Find existing event or throw exception if not found
+        //TODO: Check if user is event manager
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
 
@@ -194,6 +202,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(UUID eventId) {
+        //TODO: Check if user is event manager
         Event event = eventRepository.getEventByEventId(eventId);
 
         // Update event state to cancelled

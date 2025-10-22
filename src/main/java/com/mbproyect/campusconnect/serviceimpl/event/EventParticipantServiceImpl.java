@@ -89,7 +89,6 @@ public class EventParticipantServiceImpl implements EventParticipantService {
 
     @Override
     public void cancelEventSubscription(UUID participantId, UUID userId) {
-
         User user = userValidator.validateUserExists(userId);
         userValidator.validateUserIsActive(user);
 
@@ -97,7 +96,7 @@ public class EventParticipantServiceImpl implements EventParticipantService {
                 .findById(participantId)
                 .orElseThrow(() ->  new EventNotFoundException("Participant not found"));
 
-        // Check if who wants to delete the subscription is the current user
+        //TODO: Check if who wants to delete the subscription is the current user
         UUID participantUserProfileId = participant.getUserProfile().getId();
         UUID currentUserProfileId = user.getUserProfile().getId();
 
