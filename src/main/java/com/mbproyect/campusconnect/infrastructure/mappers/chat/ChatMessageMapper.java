@@ -1,0 +1,31 @@
+package com.mbproyect.campusconnect.infrastructure.mappers.chat;
+
+import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
+import com.mbproyect.campusconnect.model.entity.chat.ChatMessage;
+import com.mbproyect.campusconnect.model.entity.chat.EventChat;
+import com.mbproyect.campusconnect.model.entity.user.UserProfile;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ChatMessageMapper {
+
+    static public ChatMessage toEntity(EventChat chat, UserProfile sender, String encryptedText) {
+        ChatMessage message = new ChatMessage();
+        message.setChat(chat);
+        message.setSender(sender);
+        message.setEncryptedText(encryptedText);
+        return message;
+    }
+
+
+    static public ChatMessageResponse toResponse(ChatMessage entity, String decryptedText) {
+        return new ChatMessageResponse(
+                entity.getId(),
+                entity.getSender().getId(),
+                entity.getSender().getUserName(),
+                decryptedText,
+                entity.getSentAt()
+        );
+    }
+}
+
