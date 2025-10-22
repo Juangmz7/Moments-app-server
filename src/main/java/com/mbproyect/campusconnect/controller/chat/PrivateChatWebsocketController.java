@@ -2,6 +2,8 @@ package com.mbproyect.campusconnect.controller.chat;
 
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
+import com.mbproyect.campusconnect.service.chat.ChatMessageService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,18 +12,21 @@ import org.springframework.stereotype.Controller;
 import java.util.UUID;
 
 /**
- *  Web socket controller for private chats
+ *  Websocket controller for private chats
  */
 
 @Controller
-public class PrivateChatController {
+public class PrivateChatWebsocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageService messageService;
 
-    public PrivateChatController(
-            SimpMessagingTemplate messagingTemplate
+    public PrivateChatWebsocketController(
+            SimpMessagingTemplate messagingTemplate,
+            @Qualifier("privateChatMessageService") ChatMessageService messageService
     ) {
         this.messagingTemplate = messagingTemplate;
+        this.messageService = messageService;
     }
 
     @MessageMapping("/user/{chatId}/send")
@@ -29,11 +34,11 @@ public class PrivateChatController {
             @DestinationVariable UUID chatId,
             ChatMessageRequest messageRequest
     ) {
-        ChatMessageResponse chatMessageResponse = new ChatMessageResponse();
+        ChatMessageResponse chatMessageResponse = messageService.sendMessage(messageRequest, chatId);
 
         // Sends the message to chatId subscribers
         messagingTemplate.convertAndSend(
-                "/event/chat/" + chatId, chatMessageResponse
+                "/user/chat/" + chatId, chatMessageResponse
         );
     }
 }

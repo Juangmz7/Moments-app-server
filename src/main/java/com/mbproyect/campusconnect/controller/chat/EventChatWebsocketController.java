@@ -2,7 +2,7 @@ package com.mbproyect.campusconnect.controller.chat;
 
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
-import com.mbproyect.campusconnect.service.ChatMessageService;
+import com.mbproyect.campusconnect.service.chat.ChatMessageService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,16 +12,16 @@ import org.springframework.stereotype.Controller;
 import java.util.UUID;
 
 /**
- *  Web socket controller for event chats
+ *  Websocket controller for event chats
  */
 
 @Controller
-public class EventChatController {
+public class EventChatWebsocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService messageService;
 
-    public EventChatController(
+    public EventChatWebsocketController(
             SimpMessagingTemplate messagingTemplate,
            @Qualifier("eventChatMessageService") ChatMessageService messageService
     ) {
