@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.controller.chat;
+package com.mbproyect.campusconnect.controller.chat.websocket;
 
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
