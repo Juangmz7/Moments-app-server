@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.dto.eventchat.request;
+package com.mbproyect.campusconnect.dto.chat.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,9 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ChatMessageRequest {
 
-    @NotNull
-    private UUID chatId;
-
     @NotBlank(message = "Message content cannot be empty")
     private String content;
+
 }
