@@ -3,6 +3,7 @@ package com.mbproyect.campusconnect.config.exceptions.handler;
 
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.mbproyect.campusconnect.config.exceptions.chat.ChatNotFoundException;
 import com.mbproyect.campusconnect.config.exceptions.event.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -63,7 +64,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             EventNotFoundException.class,
             EventCancelledException.class,
-            UserNotFoundException.class
+            UserNotFoundException.class,
+            ChatNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFoundException(RuntimeException exception, WebRequest request) {
         return createErrorResponseEntity(exception, request, HttpStatus.NOT_FOUND);
