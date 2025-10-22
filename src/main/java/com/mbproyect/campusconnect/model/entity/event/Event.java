@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -34,8 +33,8 @@ public class Event {
     @Embedded
     private EventLocation location;
 
-    @OneToOne(mappedBy = "event")
-    private EventChat eventChat;
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EventChat chat;
 
     /**
      * Foreign key already exists in participant table
