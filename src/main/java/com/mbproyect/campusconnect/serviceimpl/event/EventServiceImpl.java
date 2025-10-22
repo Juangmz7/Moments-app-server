@@ -118,7 +118,7 @@ public class EventServiceImpl implements EventService {
     public EventResponse createEvent(EventRequest eventRequest) {
 
         validateEventDate(
-                eventRequest.getStarDate(),
+                eventRequest.getStartDate(),
                 eventRequest.getEndDate()
         );
 
@@ -153,24 +153,13 @@ public class EventServiceImpl implements EventService {
             hasChanged = true;
         }
 
-        if (!Objects.equals(event.getOrganiser(), eventRequest.getOrganiser())) {
-
-            Set<Event> events = new HashSet<>(eventRepository
-                    .findAllById(eventRequest.getOrganiser().getEventsIds()));
-
-            event.setOrganiser(
-                    EventOrganiserMapper.fromRequest(eventRequest.getOrganiser(), events)
-            );
-            hasChanged = true;
-        }
-
         if (!Objects.equals(event.getLocation(), eventRequest.getLocation())) {
             event.setLocation(eventRequest.getLocation());
             hasChanged = true;
         }
 
-        if (!Objects.equals(event.getStartDate(), eventRequest.getStarDate())) {
-            event.setStartDate(eventRequest.getStarDate());
+        if (!Objects.equals(event.getStartDate(), eventRequest.getStartDate())) {
+            event.setStartDate(eventRequest.getStartDate());
             hasChanged = true;
         }
 
@@ -183,12 +172,12 @@ public class EventServiceImpl implements EventService {
         if (hasChanged) {
 
             validateEventDate(
-                    eventRequest.getStarDate(),
+                    eventRequest.getStartDate(),
                     eventRequest.getEndDate()
             );
 
-            log.info("Updating event {} due to modified fields", eventId);
             event = eventRepository.save(event);
+            log.info("Updating event {} due to modified fields", eventId);
 
             // TODO: Notify participants sending email
 

@@ -23,7 +23,7 @@ public class Event {
 
     private String name;
 
-    @OneToOne()
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_bio_id")
     private EventBio eventBio;
 
@@ -40,7 +40,7 @@ public class Event {
      * Foreign key already exists in participant table
      * mappedBy is used to avoid creating other table with event & participants id's
      */
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventParticipant> participants;
 
     private LocalDateTime startDate;

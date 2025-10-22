@@ -6,7 +6,6 @@ import com.mbproyect.campusconnect.infrastructure.mappers.chat.ChatMapper;
 import com.mbproyect.campusconnect.model.entity.event.*;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 
-import java.util.HashSet;
 
 public class EventMapper {
 
@@ -42,9 +41,8 @@ public class EventMapper {
         Event event = new Event();
         event.setName(request.getName());
         event.setEventBio(EventBioMapper.fromRequest(request.getEventBio()));
-        event.setOrganiser(EventOrganiserMapper.fromRequest(request.getOrganiser(), new HashSet<>()));
         event.setLocation(request.getLocation());
-        event.setStartDate(request.getStarDate());
+        event.setStartDate(request.getStartDate());
         event.setEndDate(request.getEndDate());
         event.setEventStatus(EventStatus.ACTIVE); // default status (can be changed later)
 

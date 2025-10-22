@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -23,17 +24,12 @@ public class EventRequest {
     private EventBioRequest eventBio;
 
     @NotNull
-    private EventOrganiserRequest organiser;
-
-    @NotNull
     private EventLocation location;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime starDate;
+    private LocalDateTime startDate;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime endDate;
 
 }
