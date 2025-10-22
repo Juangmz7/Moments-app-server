@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.service;
+package com.mbproyect.campusconnect.service.event;
 
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;

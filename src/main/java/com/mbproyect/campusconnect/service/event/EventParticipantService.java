@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.service;
+package com.mbproyect.campusconnect.service.event;
 
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
 import jakarta.validation.constraints.NotNull;

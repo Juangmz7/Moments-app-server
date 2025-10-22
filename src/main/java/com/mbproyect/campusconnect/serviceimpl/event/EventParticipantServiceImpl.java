@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.serviceimpl;
+package com.mbproyect.campusconnect.serviceimpl.event;
 
 import com.mbproyect.campusconnect.config.exceptions.event.*;
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
@@ -8,9 +8,9 @@ import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventParticipant;
 import com.mbproyect.campusconnect.model.entity.user.User;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
-import com.mbproyect.campusconnect.service.EventParticipantService;
-import com.mbproyect.campusconnect.shared.validation.EventValidator;
-import com.mbproyect.campusconnect.shared.validation.UserValidator;
+import com.mbproyect.campusconnect.service.event.EventParticipantService;
+import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
+import com.mbproyect.campusconnect.shared.validation.user.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
 package com.mbproyect.campusconnect.infrastructure.mappers.chat;
 
-import com.mbproyect.campusconnect.dto.eventchat.response.ChatMessageResponse;
+import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
 import com.mbproyect.campusconnect.model.entity.chat.ChatMessage;
 import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;

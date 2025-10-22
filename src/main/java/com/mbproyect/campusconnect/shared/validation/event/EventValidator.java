@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.shared.validation;
+package com.mbproyect.campusconnect.shared.validation.event;
 
 import com.mbproyect.campusconnect.config.exceptions.event.EventCancelledException;
 import com.mbproyect.campusconnect.config.exceptions.event.EventNotFoundException;

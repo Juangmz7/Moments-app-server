@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.serviceimpl;
+package com.mbproyect.campusconnect.serviceimpl.event;
 
 import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
@@ -11,8 +11,8 @@ import com.mbproyect.campusconnect.model.entity.event.EventBio;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
-import com.mbproyect.campusconnect.service.EventService;
-import com.mbproyect.campusconnect.shared.validation.EventValidator;
+import com.mbproyect.campusconnect.service.event.EventService;
+import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

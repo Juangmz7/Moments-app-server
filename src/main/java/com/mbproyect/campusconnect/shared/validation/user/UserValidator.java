@@ -1,4 +1,4 @@
-package com.mbproyect.campusconnect.shared.validation;
+package com.mbproyect.campusconnect.shared.validation.user;
 
 import com.mbproyect.campusconnect.config.exceptions.event.UserNotFoundException;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository;
