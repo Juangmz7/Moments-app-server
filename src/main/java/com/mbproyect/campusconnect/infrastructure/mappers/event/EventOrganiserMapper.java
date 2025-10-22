@@ -2,7 +2,6 @@ package com.mbproyect.campusconnect.infrastructure.mappers.event;
 
 import com.mbproyect.campusconnect.dto.event.request.EventOrganiserRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventOrganiserResponse;
-import com.mbproyect.campusconnect.dto.user.response.UserProfileResponse;
 import com.mbproyect.campusconnect.infrastructure.mappers.user.UserProfileMapper;
 import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventOrganiser;
@@ -24,7 +23,8 @@ public class EventOrganiserMapper {
 
         EventOrganiserResponse response = new EventOrganiserResponse();
         response.setId(organiser.getId());
-        response.setUsername(organiser.getUserProfile().getUserName());
+        response.setName(organiser.getUserProfile().getUserName());
+        response.setProfileId(organiser.getUserProfile().getId());
 
         return response;
     }

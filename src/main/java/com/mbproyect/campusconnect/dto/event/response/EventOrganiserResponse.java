@@ -13,5 +13,8 @@ public class EventOrganiserResponse {
 
     private UUID id;
 
-    private String username;
+    private UUID profileId;
+
+    private String name;
+
 }
