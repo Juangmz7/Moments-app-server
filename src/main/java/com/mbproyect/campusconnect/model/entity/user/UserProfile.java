@@ -19,6 +19,7 @@ public class UserProfile {
     @EqualsAndHashCode.Include
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String userName;
 
     private int age;
