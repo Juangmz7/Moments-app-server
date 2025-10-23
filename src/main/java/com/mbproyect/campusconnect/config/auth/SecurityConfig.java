@@ -2,13 +2,57 @@ package com.mbproyect.campusconnect.config.auth;
 
 import org.springframework.context.annotation.Configuration;
 
+
+import org.springframework.context.annotation.Bean;
+
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 public class SecurityConfig {
 
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     /**
      * Modifies the security filters
+     * Allows public access to "login", "register", etc.
      * Disables the csrf in order to make a stateless request server
      */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .csrf(customizer -> customizer.disable())
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register",
+                                "/auth/validate-code",
+                                "/auth/activate-account",
+                                "/auth/refresh-token"
+                        ) // Authorized endpoints
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                // Adds the JWT filter before the authentication
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> null;
+    }
 
 }
+
