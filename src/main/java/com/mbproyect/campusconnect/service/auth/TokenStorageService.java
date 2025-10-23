@@ -1,17 +1,19 @@
-package com.mbproyect.campusconnect.service.storage;
+package com.mbproyect.campusconnect.service.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Duration;
+
 @Service
 @Validated
-public interface StorageService {
+public interface TokenStorageService {
 
-    void saveValue(@NotNull String key, @NotBlank String value);
+    void addToken (@NotNull String key, @NotBlank String value, Duration ttl);
 
-    boolean isKeySaved(@NotNull String key);
+    boolean isTokenValid (@NotNull String key);
 
-    String getValue(@NotNull String key);
+    String getToken (@NotNull String key);
 }

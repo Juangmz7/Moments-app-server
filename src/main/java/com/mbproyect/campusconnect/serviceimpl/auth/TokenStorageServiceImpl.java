@@ -1,32 +1,39 @@
-package com.mbproyect.campusconnect.serviceimpl;
+package com.mbproyect.campusconnect.serviceimpl.auth;
 
-import com.mbproyect.campusconnect.service.storage.StorageService;
+import com.mbproyect.campusconnect.service.auth.TokenStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 @Service
 @Slf4j
-public class StorageServiceImpl implements StorageService {
+public class TokenStorageServiceImpl implements TokenStorageService {
 
     private final StringRedisTemplate redisTemplate;
 
-    public StorageServiceImpl(StringRedisTemplate stringRedisTemplate) {
+    public TokenStorageServiceImpl(StringRedisTemplate stringRedisTemplate) {
         this.redisTemplate = stringRedisTemplate;
     }
 
     @Override
-    public void saveValue(String key, String value) {
-
+    public void addToken(String key, String value, Duration ttl) {
+        if (ttl == null) {
+            redisTemplate.opsForValue().set(key, value);
+            return;
+        }
+        redisTemplate.opsForValue().set(key, value, ttl);
     }
 
     @Override
-    public boolean isKeySaved(String key) {
-        return false;
+    public boolean isTokenValid(String key) {
+        return redisTemplate.opsForValue().get(key) != null;
     }
 
     @Override
-    public String getValue(String key) {
-        return "";
+    public String getToken(String key) {
+        String token = redisTemplate.opsForValue().get(key);
+        return  token != null ?  token : "";
     }
 }
