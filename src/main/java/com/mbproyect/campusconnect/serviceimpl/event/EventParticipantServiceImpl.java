@@ -2,6 +2,7 @@ package com.mbproyect.campusconnect.serviceimpl.event;
 
 import com.mbproyect.campusconnect.config.exceptions.event.*;
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
+import com.mbproyect.campusconnect.events.contract.event.EventEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventParticipantMapper;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventParticipantRepository;
 import com.mbproyect.campusconnect.model.entity.event.Event;
@@ -26,15 +27,18 @@ public class EventParticipantServiceImpl implements EventParticipantService {
     private final EventValidator eventValidator;
     private final EventParticipantRepository eventParticipantRepository;
     private final UserValidator userValidator;
+    private final EventEventsNotifier eventsNotifier;
 
     public EventParticipantServiceImpl(
             EventValidator eventValidator,
             EventParticipantRepository eventParticipantRepository,
-            UserValidator userValidator
+            UserValidator userValidator,
+            EventEventsNotifier eventsNotifier
     ) {
         this.eventValidator = eventValidator;
         this.eventParticipantRepository = eventParticipantRepository;
         this.userValidator = userValidator;
+        this.eventsNotifier = eventsNotifier;
     }
 
     @Override
@@ -77,11 +81,12 @@ public class EventParticipantServiceImpl implements EventParticipantService {
         EventParticipant eventParticipant = new EventParticipant();
         eventParticipant.setEvent(event);
         eventParticipant.setUserProfile(user.getUserProfile());
+        eventParticipant.setEmail(user.getEmail());
 
         eventParticipantRepository.save(eventParticipant);
         log.info("Event participant created with id {}", eventParticipant.getId());
 
-        // TODO: Notify participant
+        eventsNotifier.onParticipantSubscribed(event, eventParticipant);
 
         return EventParticipantMapper
                 .toResponse(eventParticipant);
@@ -109,7 +114,7 @@ public class EventParticipantServiceImpl implements EventParticipantService {
         eventParticipantRepository.delete(participant);
         log.info("Subscription with participant id {} deleted", userId);
 
-        // TODO: Notify participant
+        eventsNotifier.onParticipantUnsubscribed(participant.getEvent(), participant);
 
     }
 }

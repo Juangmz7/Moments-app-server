@@ -3,6 +3,7 @@ package com.mbproyect.campusconnect.serviceimpl.event;
 import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;
+import com.mbproyect.campusconnect.events.contract.event.EventEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventBioMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventOrganiserMapper;
@@ -29,15 +30,18 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
     private final EventChatService eventChatService;
+    private final EventEventsNotifier eventsNotifier;
 
     public EventServiceImpl(
             EventRepository eventRepository,
             EventValidator eventValidator,
-            EventChatService eventChatService
+            EventChatService eventChatService,
+            EventEventsNotifier eventsNotifier
     ) {
         this.eventRepository = eventRepository;
         this.eventValidator = eventValidator;
         this.eventChatService = eventChatService;
+        this.eventsNotifier = eventsNotifier;
     }
 
     private Set<EventResponse> eventSetToResponse (Set<Event> events) {
@@ -133,61 +137,60 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
-        //  Find existing event or throw exception if not found
         //TODO: Check if user is event manager
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
 
-        boolean hasChanged = false; // Flag to track if any field was modified
+        List<String> originalValues = new ArrayList<>();
+        List<String> changedValues = new ArrayList<>();
 
-        // Compare and update each field if changed
         if (!Objects.equals(event.getName(), eventRequest.getName())) {
+            originalValues.add("Name: " + event.getName());
+            changedValues.add("Name: " + eventRequest.getName());
             event.setName(eventRequest.getName());
-            hasChanged = true;
         }
 
-        EventBio eventBio = EventBioMapper.fromRequest(eventRequest.getEventBio());
-
-        if (!Objects.equals(event.getEventBio(), eventBio)) {
-            event.setEventBio(eventBio);
-            hasChanged = true;
+        EventBio newBio = EventBioMapper.fromRequest(eventRequest.getEventBio());
+        if (!Objects.equals(event.getEventBio(), newBio)) {
+            originalValues.add("Description: " + event.getEventBio().getDescription());
+            changedValues.add("Description: " + newBio.getDescription());
+            event.setEventBio(newBio);
         }
 
         if (!Objects.equals(event.getLocation(), eventRequest.getLocation())) {
+            originalValues.add("Location: " + event.getLocation().toString());
+            changedValues.add("Location: " + eventRequest.getLocation().toString());
             event.setLocation(eventRequest.getLocation());
-            hasChanged = true;
         }
 
         if (!Objects.equals(event.getStartDate(), eventRequest.getStartDate())) {
+            originalValues.add("Start date: " + event.getStartDate());
+            changedValues.add("Start date: " + eventRequest.getStartDate());
             event.setStartDate(eventRequest.getStartDate());
-            hasChanged = true;
         }
 
         if (!Objects.equals(event.getEndDate(), eventRequest.getEndDate())) {
-            event.setStartDate(eventRequest.getEndDate());
-            hasChanged = true;
+            originalValues.add("End date: " + event.getEndDate());
+            changedValues.add("End date: " + eventRequest.getEndDate());
+            event.setEndDate(eventRequest.getEndDate());
         }
 
-        //  Persist changes only if something was updated
-        if (hasChanged) {
-
-            validateEventDate(
-                    eventRequest.getStartDate(),
-                    eventRequest.getEndDate()
-            );
+        if (!changedValues.isEmpty()) {
+            validateEventDate(eventRequest.getStartDate(), eventRequest.getEndDate());
 
             event = eventRepository.save(event);
-            log.info("Updating event {} due to modified fields", eventId);
+            log.info("Updated event {} ({} fields changed)", eventId, changedValues.size());
 
-            // TODO: Notify participants sending email
+            // Notify changes
+            eventsNotifier.onEventChanged(event, originalValues, changedValues);
 
         } else {
             log.info("No changes detected for event {}", eventId);
         }
 
-        // Convert and return the updated event as a response DTO
         return EventMapper.toResponse(event);
     }
+
 
     @Override
     public void deleteEvent(UUID eventId) {
@@ -198,7 +201,7 @@ public class EventServiceImpl implements EventService {
         event.setEventStatus(EventStatus.CANCELLED);
         log.info("Event with id {} cancelled", eventId);
 
-        // TODO: Notify participants sending email
+        eventsNotifier.onEventCancelled(event);
     }
 
 }
