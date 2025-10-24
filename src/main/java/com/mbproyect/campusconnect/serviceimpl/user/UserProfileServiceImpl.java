@@ -1,6 +1,6 @@
 package com.mbproyect.campusconnect.serviceimpl.user;
 
-import com.mbproyect.campusconnect.config.exceptions.event.UserNotFoundException;
+import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.user.request.UserProfileRequest;
 import com.mbproyect.campusconnect.dto.user.response.UserProfileResponse;
 import com.mbproyect.campusconnect.infrastructure.mappers.user.UserProfileMapper;

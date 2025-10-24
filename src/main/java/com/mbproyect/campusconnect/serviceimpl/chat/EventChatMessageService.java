@@ -1,14 +1,13 @@
 package com.mbproyect.campusconnect.serviceimpl.chat;
 
 import com.mbproyect.campusconnect.config.exceptions.chat.ChatNotFoundException;
-import com.mbproyect.campusconnect.config.exceptions.event.UserNotFoundException;
+import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
 import com.mbproyect.campusconnect.infrastructure.mappers.chat.ChatMessageMapper;
 import com.mbproyect.campusconnect.infrastructure.repository.chat.ChatMessageRepository;
 import com.mbproyect.campusconnect.infrastructure.repository.chat.ChatRepository;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserProfileRepository;
-import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository;
 import com.mbproyect.campusconnect.model.entity.chat.ChatMessage;
 import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;
