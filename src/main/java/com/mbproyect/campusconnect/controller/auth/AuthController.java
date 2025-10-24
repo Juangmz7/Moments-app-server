@@ -1,13 +1,12 @@
 package com.mbproyect.campusconnect.controller.auth;
 
+import com.mbproyect.campusconnect.dto.auth.request.RefreshTokenRequest;
 import com.mbproyect.campusconnect.dto.auth.request.UserAuthRequest;
 import com.mbproyect.campusconnect.dto.auth.response.UserAuthenticationResponse;
+import com.mbproyect.campusconnect.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -15,6 +14,11 @@ import java.util.UUID;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     /**
      *  If the email provided is in the db, an email is sent with a verification code
@@ -22,30 +26,43 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserAuthRequest userAuthRequest) {
-        return ResponseEntity.ok("Email code was sent");
+        String response = authService.login(userAuthRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/validate-code")
-    public ResponseEntity<String> validateEmailCode(String code) {
-        return ResponseEntity.ok("Header token & refresh token");
+    public ResponseEntity<UserAuthenticationResponse> validateEmailCode(
+            @RequestParam String verificationCode,
+            @RequestBody UserAuthRequest request
+    ) {
+        UserAuthenticationResponse response = authService.validateEmailCode(verificationCode, request);
+        return ResponseEntity.ok(response);
     }
 
     /**
      * Send an activate link with a token to the email
      */
     @PostMapping("/register")
-    public ResponseEntity<String> register(String email) {
-        return ResponseEntity.ok("If email exists, use the link to activate the account");
+    public ResponseEntity<Void> register(@RequestBody UserAuthRequest request) {
+        authService.register(request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/activate-account")
-    public ResponseEntity<String> activateAccount(String emailToken) {
-        return ResponseEntity.ok("Account activated");
+    public ResponseEntity<String> activateAccount(
+            @RequestParam String emailToken,
+            @RequestBody UserAuthRequest request
+    ) {
+        authService.activateAccount(emailToken, request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<String> refreshToken(String refreshToken) {
-        return ResponseEntity.ok("header-token");
+    public ResponseEntity<UserAuthenticationResponse> refreshToken(
+            @RequestBody RefreshTokenRequest request
+    ) {
+        UserAuthenticationResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -53,6 +70,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
+        authService.logout(request);
         return ResponseEntity.noContent().build();
     }
 
