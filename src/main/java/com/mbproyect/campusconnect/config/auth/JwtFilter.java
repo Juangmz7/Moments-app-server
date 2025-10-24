@@ -28,8 +28,13 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-        String token = authHeader.substring(7);
+        String token = jwtService.extractAuthToken(request);
+
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String email = jwtService.extractCredentials(token);
 
         // Validate token if is not authenticated yet
