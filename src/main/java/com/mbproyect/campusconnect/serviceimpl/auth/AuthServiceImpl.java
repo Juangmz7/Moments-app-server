@@ -128,6 +128,10 @@ public class AuthServiceImpl implements AuthService {
                 key, refreshToken.toString(), TokenType.REFRESH_TOKEN.getTtlMinutes()
         );
 
+        // Delete code from db (token is valid for one use)
+        key = TokenType.concatenate(request.getEmail(), TokenType.VERIFICATION_CODE);
+        tokenStorageService.removeToken(key);
+
         return new UserAuthenticationResponse(
                 request.getEmail(), jwt, refreshToken
         );
@@ -159,6 +163,12 @@ public class AuthServiceImpl implements AuthService {
         String jwt = jwtService.generateToken(request.getEmail());
         UUID refreshToken = EncryptionUtil.generateToken();
 
+        // Add new refresh token to db
+        String key = TokenType.concatenate(request.getEmail(), TokenType.REFRESH_TOKEN);
+        tokenStorageService.addToken(
+                key, refreshToken.toString(), TokenType.REFRESH_TOKEN.getTtlMinutes()
+        );
+
         return new UserAuthenticationResponse(
                 request.getEmail(), jwt, refreshToken
         );
@@ -167,11 +177,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(HttpServletRequest request) {
         String token = jwtService.extractAuthToken(request);
+        String email = jwtService.extractCredentials(token);
         // The token is not valid
         if (token == null) {
-            return;
+            throw new InvalidTokenException("Invalid token provided");
         }
-        // Remove the token to the validation list
-        tokenStorageService.removeToken(token);
+        // Remove the jwt
+        String key = TokenType.concatenate(email, TokenType.JWT);
+        tokenStorageService.removeToken(key);
+
+        // Remove also refresh token
+        key = TokenType.concatenate(email, TokenType.REFRESH_TOKEN);
+        tokenStorageService.removeToken(key);
     }
 }
