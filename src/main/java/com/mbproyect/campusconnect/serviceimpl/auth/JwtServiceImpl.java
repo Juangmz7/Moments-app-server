@@ -9,6 +9,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
@@ -25,13 +26,14 @@ import java.util.function.Function;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    private final String secretKey;
+    @Value("${app.secret.key}")
+    private String secretKey;
 
     private final TokenStorageService tokenStorageService;
 
     public JwtServiceImpl (TokenStorageService tokenStorageService) {
         this.tokenStorageService = tokenStorageService;
-        this.secretKey = generateSecretKey();
+        generateSecretKey();
     }
 
     /**
@@ -42,11 +44,12 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateSecretKey() {
+    public void generateSecretKey() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
             SecretKey key = keyGenerator.generateKey();
-            return Base64.getEncoder().encodeToString(key.getEncoded());
+            String encryptedKey =  Base64.getEncoder().encodeToString(key.getEncoded());
+            System.out.println(encryptedKey); // Use one of this for secretkey enviroment
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error generating secret key: " + e);
         }
@@ -78,7 +81,8 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String extractCredentials(String token) {
-        return extractClaim(token, Claims::getSubject);
+        String email =  extractClaim(token, Claims::getSubject);
+        return email;
     }
 
 
@@ -88,9 +92,13 @@ public class JwtServiceImpl implements JwtService {
         String key = TokenType.concatenate(email, TokenType.JWT);
 
         // If the token has expired, or it is not in the list
-        boolean tokenExpired = isTokenExpired(token) || !tokenStorageService.isTokenValid(key);
-
-        return validUsername && !tokenExpired;
+        if (isTokenExpired(token)) {
+            return false;
+        }
+        if (!tokenStorageService.isTokenValid(key)) {
+            return false;
+        }
+        return tokenStorageService.getToken(key).equals(token);
     }
 
     @Override
