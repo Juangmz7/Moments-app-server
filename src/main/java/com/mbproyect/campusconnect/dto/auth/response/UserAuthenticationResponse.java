@@ -11,7 +11,7 @@ public class UserAuthenticationResponse {
 
     private String email;
 
-    private String jwt;
+    private String accessToken;
 
     private UUID refreshToken;
 
