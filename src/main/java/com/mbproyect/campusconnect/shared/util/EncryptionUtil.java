@@ -1,5 +1,7 @@
 package com.mbproyect.campusconnect.shared.util;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,11 +19,10 @@ public class EncryptionUtil {
     // Load once when the class loads
     private static final byte[] secretKeyBytes = loadKey();
 
+    @Value("app.encryption.key")
+    private static String base64Key;
+
     private static byte[] loadKey() {
-        String base64Key = System.getenv("CHAT_SECRET_KEY");
-        if (base64Key == null || base64Key.isBlank()) {
-            throw new IllegalStateException("CHAT_SECRET_KEY environment variable not set");
-        }
         return Base64.getDecoder().decode(base64Key);
     }
 
