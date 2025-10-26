@@ -24,7 +24,7 @@ public interface AuthService {
 
     void activateAccount(
             @NotBlank String activatingToken,
-            @Valid UserAuthRequest request
+            @NotBlank String email
     );
 
     UserAuthenticationResponse refreshToken(@Valid RefreshTokenRequest request);

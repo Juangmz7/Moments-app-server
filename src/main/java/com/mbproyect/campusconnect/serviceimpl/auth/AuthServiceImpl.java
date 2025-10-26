@@ -101,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Generate account activation token
         UUID activatingToken = EncryptionUtil.generateToken();
-        String url = baseUrl + "token=" + activatingToken;
+        String url = baseUrl + "?email=" + userAuthRequest.getEmail() + "&token=" + activatingToken;
         String key = TokenType
                 .concatenate(userAuthRequest.getEmail(), TokenType.ACTIVATION_TOKEN);
 
@@ -138,17 +138,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void activateAccount(String activatingToken, UserAuthRequest request) {
+    public void activateAccount(String activatingToken, String email) {
         // Check if the token is valid
-        validateToken(TokenType.ACTIVATION_TOKEN, request.getEmail(), activatingToken);
+        validateToken(TokenType.ACTIVATION_TOKEN, email, activatingToken);
 
         // Token is valid so we register the user
-        String initialUsername = request.getEmail().substring(0, 6);
+        String initialUsername = email.substring(0, 6);
         var userProfile = new UserProfile();
         userProfile.setUserName(initialUsername);
 
         var user = new User();
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
         user.setUserProfile(userProfile);
         user.setActive(true);
         userRepository.save(user);

@@ -16,16 +16,21 @@ public class UserEventsNotifierImpl implements UserEventsNotifier {
 
     @Override
     public void onUserRegisteredEvent(String email, String activationLink) {
-        String body = String.format(
-                "Hello,%n%n" +
-                        "Welcome to %s! To activate your account, please click the link below:%n%n" +
-                        "%s%n%n" +
-                        "This link will expire in 24 hours for your security.%n" +
-                        "If you didn’t create an account, please ignore this message.%n%n" +
-                        "Best regards,%n" +
-                        "The %s Support Team",
-                "CampusConnect", activationLink, "Campus connect"
-        );
+        String body = String.format("""
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+              <p>Hi,</p>
+              <p>
+                Welcome to %s! To activate your account, please
+                <a href="%s">click here</a>.
+              </p>
+              <p>This link will expire in 24 hours for your security.</p>
+              <p>If you didn’t create an account, please ignore this message.</p>
+              <p>Best regards,<br/>The %s Support Team</p>
+            </body>
+          </html>
+          """, "CampusConnect", activationLink, "CampusConnect");
+
 
         mailService.sendEmail(email, "Account activation", body);
 
