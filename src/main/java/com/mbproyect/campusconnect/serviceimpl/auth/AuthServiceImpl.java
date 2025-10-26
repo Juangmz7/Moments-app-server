@@ -9,11 +9,11 @@ import com.mbproyect.campusconnect.dto.auth.response.UserAuthenticationResponse;
 import com.mbproyect.campusconnect.events.contract.user.UserEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository;
 import com.mbproyect.campusconnect.model.entity.user.User;
-import com.mbproyect.campusconnect.model.entity.user.UserProfile;
 import com.mbproyect.campusconnect.model.enums.TokenType;
 import com.mbproyect.campusconnect.service.auth.AuthService;
 import com.mbproyect.campusconnect.service.auth.JwtService;
 import com.mbproyect.campusconnect.service.auth.TokenStorageService;
+import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.util.EncryptionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +35,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
 
+    private final UserService userService;
+
     @Value("${app.activate.link}")
     private String baseUrl;
 
@@ -42,11 +44,13 @@ public class AuthServiceImpl implements AuthService {
             UserRepository userRepository,
             TokenStorageService tokenStorageService,
             UserEventsNotifier userEventsNotifier,
-            JwtService jwtService) {
+            JwtService jwtService,
+            UserService userService) {
         this.userRepository = userRepository;
         this.tokenStorageService = tokenStorageService;
         this.userEventsNotifier = userEventsNotifier;
         this.jwtService = jwtService;
+        this.userService = userService;
     }
 
     private void validateToken (TokenType tokenType, String email, String token) {
@@ -143,15 +147,7 @@ public class AuthServiceImpl implements AuthService {
         validateToken(TokenType.ACTIVATION_TOKEN, email, activatingToken);
 
         // Token is valid so we register the user
-        String initialUsername = email.substring(0, 6);
-        var userProfile = new UserProfile();
-        userProfile.setUserName(initialUsername);
-
-        var user = new User();
-        user.setEmail(email);
-        user.setUserProfile(userProfile);
-        user.setActive(true);
-        userRepository.save(user);
+        userService.createUser(email);
     }
 
     @Override
