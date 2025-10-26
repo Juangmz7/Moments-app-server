@@ -14,6 +14,7 @@ import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
 import com.mbproyect.campusconnect.service.chat.EventChatService;
 import com.mbproyect.campusconnect.service.event.EventService;
+import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,17 +32,20 @@ public class EventServiceImpl implements EventService {
     private final EventValidator eventValidator;
     private final EventChatService eventChatService;
     private final EventEventsNotifier eventsNotifier;
+    private final UserService userService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
             EventValidator eventValidator,
             EventChatService eventChatService,
-            EventEventsNotifier eventsNotifier
+            EventEventsNotifier eventsNotifier,
+            UserService userService
     ) {
         this.eventRepository = eventRepository;
         this.eventValidator = eventValidator;
         this.eventChatService = eventChatService;
         this.eventsNotifier = eventsNotifier;
+        this.userService = userService;
     }
 
     private Set<EventResponse> eventSetToResponse (Set<Event> events) {
@@ -137,9 +141,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
-        //TODO: Check if user is event manager
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
+
+        // Check if who updates it is the organiser
+        userService.validateCurrentUser(
+                event.getOrganiser().getEmail()
+        );
 
         List<String> originalValues = new ArrayList<>();
         List<String> changedValues = new ArrayList<>();
@@ -194,8 +202,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteEvent(UUID eventId) {
-        //TODO: Check if user is event manager
         Event event = eventRepository.findByEventId(eventId);
+
+        // Validate if current user is the event organiser
+        userService.validateCurrentUser(
+                event.getOrganiser().getEmail()
+        );
 
         // Update event state to cancelled
         event.setEventStatus(EventStatus.CANCELLED);

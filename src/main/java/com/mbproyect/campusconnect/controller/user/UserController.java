@@ -14,11 +14,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/users")
 @Slf4j
-public class userController {
+public class UserController {
 
     private final UserProfileService userProfileService;
 
-    public userController(UserProfileService userProfileService) {
+    public UserController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
     }
 
