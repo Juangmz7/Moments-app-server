@@ -20,6 +20,7 @@ public class EventOrganiser {
     @EqualsAndHashCode.Include
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
     @OneToOne

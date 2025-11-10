@@ -18,6 +18,7 @@ import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
 import com.mbproyect.campusconnect.service.auth.TokenStorageService;
 import com.mbproyect.campusconnect.service.chat.EventChatService;
+import com.mbproyect.campusconnect.service.event.EventOrganiserService;
 import com.mbproyect.campusconnect.service.event.EventService;
 import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
@@ -38,19 +39,21 @@ public class EventServiceImpl implements EventService {
     private final EventChatService eventChatService;
     private final EventEventsNotifier eventsNotifier;
     private final UserService userService;
+    private final EventOrganiserService eventOrganiserService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
             EventValidator eventValidator,
             EventChatService eventChatService,
             EventEventsNotifier eventsNotifier,
-            UserService userService
-    ) {
+            UserService userService,
+            EventOrganiserService eventOrganiserService) {
         this.eventRepository = eventRepository;
         this.eventValidator = eventValidator;
         this.eventChatService = eventChatService;
         this.eventsNotifier = eventsNotifier;
         this.userService = userService;
+        this.eventOrganiserService = eventOrganiserService;
     }
 
     private Set<EventResponse> eventSetToResponse (Set<Event> events) {
@@ -129,13 +132,17 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse createEvent(EventRequest eventRequest) {
-
         validateEventDate(
                 eventRequest.getStartDate(),
                 eventRequest.getEndDate()
         );
 
+        String email = userService.getCurrentUser();
         Event event = EventMapper.fromRequest(eventRequest);
+
+        // Fetch the organiser linked to email
+        EventOrganiser organiser = eventOrganiserService.getEventOrganiserByEmail(email, event);
+        event.setOrganiser(organiser);
         eventRepository.save(event);
 
         EventChat chat = eventChatService.createChat(event);
