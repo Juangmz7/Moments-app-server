@@ -7,6 +7,7 @@ import com.mbproyect.campusconnect.events.contract.event.EventEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventBioMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventOrganiserMapper;
+import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventBio;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
@@ -133,8 +134,11 @@ public class EventServiceImpl implements EventService {
         Event event = EventMapper.fromRequest(eventRequest);
         eventRepository.save(event);
 
+        EventChat chat = eventChatService.createChat(event);
+        event.setChat(chat);
+
+        eventRepository.save(event);
         log.info("Event created");
-        eventChatService.createChat(event);
 
         return this.getEventById(event.getEventId());
     }

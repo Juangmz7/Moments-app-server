@@ -19,7 +19,7 @@ public class EventChatServiceImpl implements EventChatService {
     }
 
     @Override
-    public void createChat(Event event) {
+    public EventChat createChat(Event event) {
         if (event == null) {
             throw new EventNotFoundException("Event cannot be null");
         }
@@ -29,5 +29,7 @@ public class EventChatServiceImpl implements EventChatService {
 
         chatRepository.save(chat);
         log.info("Chat with id {} created", chat.getId());
+
+        return chat;
     }
 }
