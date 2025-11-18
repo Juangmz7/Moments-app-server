@@ -19,6 +19,7 @@ public class UserProfile {
     @EqualsAndHashCode.Include
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String userName;
 
     private int age;
@@ -41,5 +42,9 @@ public class UserProfile {
 
     @Embedded
     private UserLocation userLocation;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] profilePicture;
 
 }

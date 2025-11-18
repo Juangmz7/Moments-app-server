@@ -1,6 +1,7 @@
 package com.mbproyect.campusconnect.infrastructure.repository.event;
 
 import com.mbproyect.campusconnect.model.entity.event.EventParticipant;
+import com.mbproyect.campusconnect.model.entity.user.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

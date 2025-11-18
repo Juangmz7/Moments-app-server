@@ -4,7 +4,7 @@ import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
-
+import com.mbproyect.campusconnect.service.auth.AuthService;
 import com.mbproyect.campusconnect.service.event.EventParticipantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +12,11 @@ import com.mbproyect.campusconnect.service.event.EventService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
 
 @RestController
 @RequestMapping("/api/events")
@@ -77,6 +79,14 @@ public class EventController {
         return ResponseEntity.ok(eventParticipantService.getParticipantsByEvent(eventId));
     }
 
+    // TODO: Implement this by looking if the user who sends the token is a eventId participant
+//    @GetMapping("/chat/{eventId}/")
+//    public ResponseEntity<Set<EventParticipantResponse>> getChatId(
+//            @PathVariable UUID eventId
+//    ) {
+//        return ResponseEntity.ok(eventParticipantService.getChatId(eventId));
+//    }
+
     @PostMapping
     public ResponseEntity<EventResponse> createEvent(
             @Valid @RequestBody EventRequest eventRequest
@@ -85,13 +95,12 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // This is a temporal version while there is not auth
-    @PostMapping("/participants/{participantId}/{userId}")
+    @PostMapping("/participants/{eventId}")
     public ResponseEntity<EventParticipantResponse> subscribeToEvent(
-            @PathVariable UUID participantId, @PathVariable UUID userId
+            @PathVariable UUID eventId
     ) {
         EventParticipantResponse eventParticipantResponse = eventParticipantService
-                .subscribeToEvent(participantId, userId);
+                .subscribeToEvent(eventId);
         return ResponseEntity.status(HttpStatus.CREATED).body(eventParticipantResponse);
     }
 
@@ -113,13 +122,21 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    // This is a temporal version while there is not auth
-    @DeleteMapping("/{eventId}/participants/{userProfileId}")
+    @DeleteMapping("/{eventId}/participants/")
     public ResponseEntity<Void> cancelEventSubscription(
-            @PathVariable UUID eventId,
-            @PathVariable UUID userProfileId
+            @PathVariable UUID eventId
     ) {
-        eventParticipantService.cancelEventSubscription(eventId, userProfileId);
+        eventParticipantService.cancelEventSubscription(eventId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+    * Get all the events created by a user
+    */
+    @GetMapping("/userCreatedEvents")
+    public ResponseEntity<List<EventResponse>> getMyEvents() {
+        List<EventResponse> responses = eventService.getEventsCreatedByCurrentUser();
+        return ResponseEntity.ok(responses);
+    }
+   
 }

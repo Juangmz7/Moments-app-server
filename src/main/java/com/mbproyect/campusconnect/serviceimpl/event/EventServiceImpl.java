@@ -1,18 +1,26 @@
 package com.mbproyect.campusconnect.serviceimpl.event;
 
 import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
+import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;
+import com.mbproyect.campusconnect.events.contract.event.EventEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventBioMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventOrganiserMapper;
+import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventBio;
+import com.mbproyect.campusconnect.model.entity.event.EventOrganiser;
+import com.mbproyect.campusconnect.model.entity.user.User;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
+import com.mbproyect.campusconnect.service.auth.TokenStorageService;
 import com.mbproyect.campusconnect.service.chat.EventChatService;
+import com.mbproyect.campusconnect.service.event.EventOrganiserService;
 import com.mbproyect.campusconnect.service.event.EventService;
+import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,15 +37,23 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventValidator eventValidator;
     private final EventChatService eventChatService;
+    private final EventEventsNotifier eventsNotifier;
+    private final UserService userService;
+    private final EventOrganiserService eventOrganiserService;
 
     public EventServiceImpl(
             EventRepository eventRepository,
             EventValidator eventValidator,
-            EventChatService eventChatService
-    ) {
+            EventChatService eventChatService,
+            EventEventsNotifier eventsNotifier,
+            UserService userService,
+            EventOrganiserService eventOrganiserService) {
         this.eventRepository = eventRepository;
         this.eventValidator = eventValidator;
         this.eventChatService = eventChatService;
+        this.eventsNotifier = eventsNotifier;
+        this.userService = userService;
+        this.eventOrganiserService = eventOrganiserService;
     }
 
     private Set<EventResponse> eventSetToResponse (Set<Event> events) {
@@ -116,89 +132,120 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse createEvent(EventRequest eventRequest) {
-
         validateEventDate(
                 eventRequest.getStartDate(),
                 eventRequest.getEndDate()
         );
 
+        String email = userService.getCurrentUser();
         Event event = EventMapper.fromRequest(eventRequest);
+
+        // Fetch the organiser linked to email
+        EventOrganiser organiser = eventOrganiserService.getEventOrganiserByEmail(email, event);
+        event.setOrganiser(organiser);
         eventRepository.save(event);
 
+        EventChat chat = eventChatService.createChat(event);
+        event.setChat(chat);
+
+        eventRepository.save(event);
         log.info("Event created");
-        eventChatService.createChat(event);
 
         return this.getEventById(event.getEventId());
     }
 
     @Override
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
-        //  Find existing event or throw exception if not found
-        //TODO: Check if user is event manager
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
 
-        boolean hasChanged = false; // Flag to track if any field was modified
+        // Check if who updates it is the organiser
+        userService.validateCurrentUser(
+                event.getOrganiser().getEmail()
+        );
 
-        // Compare and update each field if changed
+        List<String> originalValues = new ArrayList<>();
+        List<String> changedValues = new ArrayList<>();
+
         if (!Objects.equals(event.getName(), eventRequest.getName())) {
+            originalValues.add("Name: " + event.getName());
+            changedValues.add("Name: " + eventRequest.getName());
             event.setName(eventRequest.getName());
-            hasChanged = true;
         }
 
-        EventBio eventBio = EventBioMapper.fromRequest(eventRequest.getEventBio());
-
-        if (!Objects.equals(event.getEventBio(), eventBio)) {
-            event.setEventBio(eventBio);
-            hasChanged = true;
+        EventBio newBio = EventBioMapper.fromRequest(eventRequest.getEventBio());
+        if (!Objects.equals(event.getEventBio(), newBio)) {
+            originalValues.add("Description: " + event.getEventBio().getDescription());
+            changedValues.add("Description: " + newBio.getDescription());
+            event.setEventBio(newBio);
         }
 
         if (!Objects.equals(event.getLocation(), eventRequest.getLocation())) {
+            originalValues.add("Location: " + event.getLocation().toString());
+            changedValues.add("Location: " + eventRequest.getLocation().toString());
             event.setLocation(eventRequest.getLocation());
-            hasChanged = true;
         }
 
         if (!Objects.equals(event.getStartDate(), eventRequest.getStartDate())) {
+            originalValues.add("Start date: " + event.getStartDate());
+            changedValues.add("Start date: " + eventRequest.getStartDate());
             event.setStartDate(eventRequest.getStartDate());
-            hasChanged = true;
         }
 
         if (!Objects.equals(event.getEndDate(), eventRequest.getEndDate())) {
-            event.setStartDate(eventRequest.getEndDate());
-            hasChanged = true;
+            originalValues.add("End date: " + event.getEndDate());
+            changedValues.add("End date: " + eventRequest.getEndDate());
+            event.setEndDate(eventRequest.getEndDate());
         }
 
-        //  Persist changes only if something was updated
-        if (hasChanged) {
-
-            validateEventDate(
-                    eventRequest.getStartDate(),
-                    eventRequest.getEndDate()
-            );
+        if (!changedValues.isEmpty()) {
+            validateEventDate(eventRequest.getStartDate(), eventRequest.getEndDate());
 
             event = eventRepository.save(event);
-            log.info("Updating event {} due to modified fields", eventId);
+            log.info("Updated event {} ({} fields changed)", eventId, changedValues.size());
 
-            // TODO: Notify participants sending email
+            // Notify changes
+            eventsNotifier.onEventChanged(event, originalValues, changedValues);
 
         } else {
             log.info("No changes detected for event {}", eventId);
         }
 
-        // Convert and return the updated event as a response DTO
         return EventMapper.toResponse(event);
     }
 
+
     @Override
     public void deleteEvent(UUID eventId) {
-        //TODO: Check if user is event manager
         Event event = eventRepository.findByEventId(eventId);
+
+        // Validate if current user is the event organiser
+        userService.validateCurrentUser(
+                event.getOrganiser().getEmail()
+        );
 
         // Update event state to cancelled
         event.setEventStatus(EventStatus.CANCELLED);
         log.info("Event with id {} cancelled", eventId);
 
-        // TODO: Notify participants sending email
+        eventsNotifier.onEventCancelled(event);
     }
+    @Override
+    public List<EventResponse> getEventsCreatedByCurrentUser() {
+        String email = userService.getCurrentUser(); // already available pattern
+        User user = userService.findUserByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException("No user for token"));
+
+        UUID profileId = user.getUserProfile().getId();
+        List<Event> events = eventRepository.findEventsByCreator(profileId, EventStatus.ACTIVE);
+
+        if (events.isEmpty()) {
+            return List.of();
+        }
+
+        return events.stream()
+            .map(EventMapper::toResponse)
+            .toList();
+}
 
 }

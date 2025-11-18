@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ToDoApp
+    labels:
+      - "org.springframework.boot.service-connection=postgres"
+    ports:
+      - "5433:5432"
+    networks:
+      - my-network
+
+  redis:
+    image: redis:7.4
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
+networks:
+  my-network:
+    driver: bridge

@@ -18,6 +18,9 @@ public class EventParticipant {
     @EqualsAndHashCode.Include
     private UUID id;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @ManyToOne
     private UserProfile userProfile;
 
