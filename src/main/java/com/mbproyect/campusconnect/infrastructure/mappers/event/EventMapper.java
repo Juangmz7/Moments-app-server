@@ -25,6 +25,7 @@ public class EventMapper {
         response.setLocation(event.getLocation());
         response.setStartDate(event.getStartDate());
         response.setEndDate(event.getEndDate());
+        response.setParticipantCount(event.getParticipants().size());
         response.setChat(ChatMapper.toResponse(event.getChat()));
 
         return response;

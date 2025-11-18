@@ -17,5 +17,4 @@ public class EventParticipantResponse {
     private UserProfileResponse userProfile;
 
     private UUID eventId;
-    private String eventName;
 }

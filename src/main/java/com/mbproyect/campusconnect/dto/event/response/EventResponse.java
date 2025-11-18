@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -25,6 +26,8 @@ public class EventResponse {
     private EventLocation location;
 
     private EventChatResponse chat;
+
+    private long participantCount;
 
     private LocalDateTime startDate;
 
