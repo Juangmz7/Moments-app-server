@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/error"
                         ) // Authorized endpoints
                         .permitAll()
                         .anyRequest()
@@ -74,8 +75,9 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Unauthorized or invalid token\"}");
+            response.getWriter().write("{\"error\": \"" + authException.getMessage() + "\"}");
         };
+
     }
 
 }
