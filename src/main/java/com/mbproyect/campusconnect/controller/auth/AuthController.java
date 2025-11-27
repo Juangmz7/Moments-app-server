@@ -35,8 +35,8 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<TokenResponse> tokenAuthentication(@RequestBody TokenRequest request) {
-        TokenResponse response = authService.tokenAuthentication(request);
+    public ResponseEntity<UserAuthenticationResponse> tokenAuthentication(@RequestBody TokenRequest request) {
+        UserAuthenticationResponse response = authService.tokenAuthentication(request);
         return ResponseEntity.ok(response);
     }
 

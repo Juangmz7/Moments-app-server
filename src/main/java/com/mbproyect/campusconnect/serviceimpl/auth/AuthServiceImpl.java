@@ -5,7 +5,6 @@ import com.mbproyect.campusconnect.config.exceptions.user.UserAlreadyExistsExcep
 import com.mbproyect.campusconnect.dto.auth.request.RefreshTokenRequest;
 import com.mbproyect.campusconnect.dto.auth.request.TokenRequest;
 import com.mbproyect.campusconnect.dto.auth.request.UserAuthRequest;
-import com.mbproyect.campusconnect.dto.auth.response.TokenResponse;
 import com.mbproyect.campusconnect.dto.auth.response.UserAuthenticationResponse;
 import com.mbproyect.campusconnect.events.contract.user.UserEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository;
@@ -74,6 +73,20 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    // Helper to generate user tokens when login
+    private UserAuthenticationResponse generateAuthTokens (String email) {
+        String jwt = jwtService.generateToken(email);
+        UUID refreshToken = EncryptionUtil.generateToken();
+
+        String key = TokenType.concatenate(email, TokenType.REFRESH_TOKEN);
+        tokenStorageService.addToken(
+                key, refreshToken.toString(), TokenType.REFRESH_TOKEN.getTtlMinutes()
+        );
+
+        return new UserAuthenticationResponse(email, jwt, refreshToken);
+    }
+
+
     @Override
     public void login(UserAuthRequest userAuthRequest) {
         // Check if user exists
@@ -124,25 +137,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserAuthenticationResponse validateEmailCode(String verificationToken, UserAuthRequest request) {
         validateToken(
-                TokenType.VERIFICATION_CODE, request.getEmail(), verificationToken
+                TokenType.VERIFICATION_CODE,
+                request.getEmail(),
+                verificationToken
         );
 
-        // Return successfully login
-        String jwt = jwtService.generateToken(request.getEmail());
-        UUID refreshToken = EncryptionUtil.generateToken();
-
-        String key = TokenType.concatenate(request.getEmail(), TokenType.REFRESH_TOKEN);
-        tokenStorageService.addToken(
-                key, refreshToken.toString(), TokenType.REFRESH_TOKEN.getTtlMinutes()
-        );
+        UserAuthenticationResponse response = this
+                .generateAuthTokens(request.getEmail());
 
         // Delete code from db (token is valid for one use)
-        key = TokenType.concatenate(request.getEmail(), TokenType.VERIFICATION_CODE);
+        String key = TokenType
+                .concatenate(request.getEmail(), TokenType.VERIFICATION_CODE);
+
         tokenStorageService.removeToken(key);
 
-        return new UserAuthenticationResponse(
-                request.getEmail(), jwt, refreshToken
-        );
+        return response;
     }
 
     @Override
@@ -155,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponse tokenAuthentication(TokenRequest request) {
+    public UserAuthenticationResponse tokenAuthentication(TokenRequest request) {
         // Validate token
         String email = externalAuthService.verifyToken(request);
 
@@ -167,8 +176,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Generate access token
-        String accessToken = jwtService.generateToken(email);
-        return new TokenResponse(accessToken);
+        return this.generateAuthTokens(email);
     }
 
     @Override

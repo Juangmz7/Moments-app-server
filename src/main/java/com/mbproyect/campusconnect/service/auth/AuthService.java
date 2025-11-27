@@ -29,7 +29,7 @@ public interface AuthService {
             @NotBlank String email
     );
 
-    TokenResponse tokenAuthentication (@Valid TokenRequest request);
+    UserAuthenticationResponse tokenAuthentication (@Valid TokenRequest request);
     UserAuthenticationResponse refreshToken(@Valid RefreshTokenRequest request);
 
     void logout(HttpServletRequest request);
