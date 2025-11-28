@@ -144,10 +144,10 @@ public class EventChatMessageService implements ChatMessageService {
         return messages.map(
                 message -> {
                     String decryptedContent = encryptionUtil
-                            .decrypt(message.getEncryptedText());
+                        .decrypt(message.getEncryptedText());
 
                     return ChatMessageMapper
-                            .toResponse(message, decryptedContent, user.getUserId());
+                            .toResponse(message, decryptedContent, user.getUserProfile().getId());
                 }
         );
     }

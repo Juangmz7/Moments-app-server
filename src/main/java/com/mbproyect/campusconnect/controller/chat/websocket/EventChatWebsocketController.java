@@ -43,7 +43,6 @@ public class EventChatWebsocketController {
 
         // Sends the message to chatId subscribers
         log.info("Chat message sent");
-        System.out.println("Is me: " + chatMessageResponse.isMine());
 
         messagingTemplate.convertAndSend(
                 "/event/chat/" + chatId, chatMessageResponse
