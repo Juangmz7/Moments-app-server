@@ -69,8 +69,24 @@ public class EventChatMessageService implements ChatMessageService {
                 .orElseThrow(() -> new UserNotFoundException("Invalid userprofile id"));
     }
 
+    // Version for websocket connection
+    private User validateUser(UUID eventId, String currentUserEmail) {
+
+        if (!isUserAuthorized(currentUserEmail, eventId)) {
+            log.warn("User not authorized for websocket connection");
+            throw new IllegalStateException("Unauthorized action");
+        }
+
+        return userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new UserNotFoundException("Invalid userprofile id"));
+    }
+
     @Override
-    public ChatMessageResponse sendMessage(ChatMessageRequest chatMessageRequest, UUID chatId) {
+    public ChatMessageResponse sendMessage(
+            ChatMessageRequest chatMessageRequest,
+            UUID chatId,
+            String userEmail
+    ) {
 
         log.info("Sending chat message");
         EventChat eventChat = chatRepository.findEventChatById(chatId);
@@ -82,8 +98,7 @@ public class EventChatMessageService implements ChatMessageService {
 
         var eventId = eventChat.getEvent().getEventId();
 
-        User sender = validateUser(eventId);
-
+        User sender = validateUser(eventId, userEmail);
         // Use helper to encrypt message content in the db
         String encryptedContent = encryptionUtil.encrypt(chatMessageRequest.getContent());
 
@@ -95,10 +110,12 @@ public class EventChatMessageService implements ChatMessageService {
         String decryptedContent = encryptionUtil
                 .decrypt(savedMessage.getEncryptedText());
 
-        log.info("Chat message sent");
-
         return ChatMessageMapper
-                .toResponse(savedMessage, decryptedContent, sender.getUserId());
+                .toResponse(
+                        savedMessage,
+                        decryptedContent,
+                        sender.getUserProfile().getId()
+                );
     }
 
     @Override

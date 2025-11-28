@@ -12,7 +12,11 @@ import java.util.UUID;
 public class PrivateChatMessageService implements ChatMessageService {
 
     @Override
-    public ChatMessageResponse sendMessage(ChatMessageRequest chatMessageRequest, UUID chatId) {
+    public ChatMessageResponse sendMessage(
+            ChatMessageRequest chatMessageRequest,
+            UUID chatId,
+            String userEmail
+    ) {
         return null; // TODO
     }
 

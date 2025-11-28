@@ -18,7 +18,8 @@ public interface ChatMessageService {
 
     ChatMessageResponse sendMessage(
             @Valid ChatMessageRequest chatMessageRequest,
-            @NotNull UUID chatId
+            @NotNull UUID chatId,
+            @NotNull String userEmail
     );
 
     Page<ChatMessageResponse> getMessages(

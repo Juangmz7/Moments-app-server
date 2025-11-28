@@ -50,7 +50,7 @@ public class JwtFilter extends OncePerRequestFilter {
             // Validate token if not authenticated yet
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                if (jwtService.validateToken(token, email)) {
+                if (jwtService.validateToken(token)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     email, null, Collections.emptyList()

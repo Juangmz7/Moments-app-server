@@ -29,11 +29,16 @@ public class ChatMessageMapper {
             String decryptedText,
             UUID actualUserId
     ) {
+        byte [] image = entity.getSender().getProfilePicture();
+        String eventImage = null;
+        if (image != null) {
+            eventImage = Base64.getEncoder().encodeToString(image);
+        }
     return new ChatMessageResponse(
         entity.getId(),
         entity.getSender().getId(),
         entity.getSender().getUserName(),
-            Base64.getEncoder().encodeToString(entity.getSender().getProfilePicture()),
+             eventImage,
         decryptedText,
         entity.getSentAt(),
         actualUserId.equals(entity.getSender().getId())

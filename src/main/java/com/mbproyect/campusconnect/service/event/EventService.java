@@ -62,7 +62,7 @@ public interface EventService {
 
      boolean doesUserBelongsToEvent(
              @NotBlank String email,
-             @NotBlank UUID eventId
+             @NotNull UUID eventId
      );
 
      EventResponse createEvent (@Valid EventRequest eventRequest);
