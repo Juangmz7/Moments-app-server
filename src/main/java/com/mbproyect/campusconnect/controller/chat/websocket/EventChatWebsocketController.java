@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -44,6 +43,7 @@ public class EventChatWebsocketController {
 
         // Sends the message to chatId subscribers
         log.info("Chat message sent");
+        System.out.println("Is me: " + chatMessageResponse.isMine());
 
         messagingTemplate.convertAndSend(
                 "/event/chat/" + chatId, chatMessageResponse

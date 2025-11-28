@@ -6,11 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@RestController("/api/chat")
+@RestController
+@RequestMapping("/api/chat")
 public class EventChatMessageController {
 
     private final ChatMessageService chatMessageService;
@@ -20,7 +22,7 @@ public class EventChatMessageController {
     }
 
     // Get messages from a chat
-    @GetMapping("{chatId}")
+    @GetMapping("{chatId}/messages")
     public ResponseEntity<Page<ChatMessageResponse>> getChatMessages(
             @PathVariable UUID chatId,
             int page,

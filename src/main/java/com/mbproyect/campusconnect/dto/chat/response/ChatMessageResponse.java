@@ -1,5 +1,6 @@
 package com.mbproyect.campusconnect.dto.chat.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,7 @@ public class ChatMessageResponse {
     private String senderProfilePicture;
     private String content;
     private LocalDateTime sentAt;
-    private boolean isMine;
+
+    @JsonProperty("isMine")
+    private boolean mine;
 }
