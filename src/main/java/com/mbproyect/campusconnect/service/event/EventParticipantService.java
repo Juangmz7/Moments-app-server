@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Set;
 import java.util.UUID;
 
 /***
@@ -23,6 +24,12 @@ public interface EventParticipantService {
             @Min(0) int page,
             @Min(1) @Max(50) int size
     );
+
+    Set<EventParticipantResponse> getParticipantsByEventChatId(
+            @NotNull UUID chatId
+    );
+
+
 
     EventParticipantResponse subscribeToEvent(@NotNull UUID eventId);
 

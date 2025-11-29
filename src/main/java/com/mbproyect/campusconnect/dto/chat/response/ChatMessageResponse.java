@@ -18,6 +18,7 @@ public class ChatMessageResponse {
     private String senderName;
     private String senderProfilePicture;
     private String content;
+    private UUID chatId;
     private LocalDateTime sentAt;
 
     @JsonProperty("isMine")

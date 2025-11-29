@@ -11,6 +11,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -44,6 +45,7 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    @Transactional
     public void generateSecretKey() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
@@ -55,6 +57,7 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    @Transactional
     @Override
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();

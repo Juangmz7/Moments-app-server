@@ -10,6 +10,7 @@ import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository
 import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventParticipant;
 import com.mbproyect.campusconnect.model.entity.user.User;
+import com.mbproyect.campusconnect.service.chat.EventChatService;
 import com.mbproyect.campusconnect.service.event.EventParticipantService;
 import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
@@ -18,9 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -49,6 +53,7 @@ public class EventParticipantServiceImpl implements EventParticipantService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventParticipantResponse> getParticipantsByEvent(
             UUID eventId,
@@ -72,6 +77,16 @@ public class EventParticipantServiceImpl implements EventParticipantService {
                 .map(EventParticipantMapper::toResponse); // Call method reference
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Set<EventParticipantResponse> getParticipantsByEventChatId(UUID chatId) {
+         return eventParticipantRepository
+                 .getEventParticipantsByEvent_Chat_Id(chatId)
+                 .stream().map(EventParticipantMapper::toResponse)
+                 .collect(Collectors.toSet());
+    }
+
+    @Transactional
     @Override
     public EventParticipantResponse subscribeToEvent(UUID eventId) {
         String currentUserEmail = userService.getCurrentUser();
@@ -109,6 +124,7 @@ public class EventParticipantServiceImpl implements EventParticipantService {
                 .toResponse(eventParticipant);
     }
 
+    @Transactional
     @Override
     public void cancelEventSubscription(UUID eventId) {
         String currentUserEmail = userService.getCurrentUser();

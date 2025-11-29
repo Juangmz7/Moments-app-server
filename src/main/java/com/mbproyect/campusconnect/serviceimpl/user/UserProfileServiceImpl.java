@@ -8,9 +8,9 @@ import com.mbproyect.campusconnect.infrastructure.repository.user.UserProfileRep
 import com.mbproyect.campusconnect.model.entity.user.UserLocation;
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;
 import com.mbproyect.campusconnect.service.user.UserProfileService;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -26,6 +26,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         this.userProfileRepository = userProfileRepository;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserProfileResponse getById(UUID userProfileId) {
         UserProfile profile = userProfileRepository.findById(userProfileId)

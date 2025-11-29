@@ -34,15 +34,16 @@ public class ChatMessageMapper {
         if (image != null) {
             eventImage = Base64.getEncoder().encodeToString(image);
         }
-    return new ChatMessageResponse(
-        entity.getId(),
-        entity.getSender().getId(),
-        entity.getSender().getUserName(),
-             eventImage,
-        decryptedText,
-        entity.getSentAt(),
-        actualUserId.equals(entity.getSender().getId())
-    );
+        return new ChatMessageResponse(
+                entity.getId(),
+                entity.getSender().getId(),
+                entity.getSender().getUserName(),
+                eventImage,
+                decryptedText,
+                entity.getChat().getId(),
+                entity.getSentAt(),
+                actualUserId.equals(entity.getSender().getId())
+        );
     }
 }
 

@@ -22,6 +22,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventChatResponse> getChats(int page, int size) {
         String userEmail = getCurrentUser();
@@ -111,6 +113,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @Transactional
     @Override
     public User createUser(String email) {
         String initialUsername = email.substring(0, 6);
@@ -124,6 +127,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);

@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -87,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    @Transactional
     @Override
     public void login(UserAuthRequest userAuthRequest) {
         // Check if user exists
@@ -111,6 +113,7 @@ public class AuthServiceImpl implements AuthService {
         userEventsNotifier.onUserLoggedEvent(user.getEmail(), verificationCode);
     }
 
+    @Transactional
     @Override
     public void register(UserAuthRequest userAuthRequest) {
         Optional<User> user = userRepository.findByEmail(userAuthRequest.getEmail());
@@ -134,6 +137,7 @@ public class AuthServiceImpl implements AuthService {
         userEventsNotifier.onUserRegisteredEvent(userAuthRequest.getEmail(), url);
     }
 
+    @Transactional
     @Override
     public UserAuthenticationResponse validateEmailCode(String verificationToken, UserAuthRequest request) {
         validateToken(
@@ -154,6 +158,7 @@ public class AuthServiceImpl implements AuthService {
         return response;
     }
 
+    @Transactional
     @Override
     public void activateAccount(String activatingToken, String email) {
         // Check if the token is valid
@@ -163,6 +168,7 @@ public class AuthServiceImpl implements AuthService {
         userService.createUser(email);
     }
 
+    @Transactional
     @Override
     public UserAuthenticationResponse tokenAuthentication(TokenRequest request) {
         // Validate token
@@ -179,6 +185,7 @@ public class AuthServiceImpl implements AuthService {
         return this.generateAuthTokens(email);
     }
 
+    @Transactional
     @Override
     public UserAuthenticationResponse refreshToken(RefreshTokenRequest request) {
         validateToken(
@@ -199,6 +206,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
+    @Transactional
     @Override
     public void logout(HttpServletRequest request) {
         String token = jwtService.extractAuthToken(request);

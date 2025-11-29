@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -90,6 +91,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public EventResponse getEventById(UUID id) {
         Event event = eventValidator.validateEventExists(id);
@@ -99,6 +101,7 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toResponse(event);  // Parse event to event
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsByAnyTag(
             Set<InterestTag> tags,
@@ -115,6 +118,7 @@ public class EventServiceImpl implements EventService {
         return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsByDateAscending(
             LocalDateTime eventDate,
@@ -136,6 +140,7 @@ public class EventServiceImpl implements EventService {
         return events.map(EventMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsByLocation(
             String city,
@@ -152,6 +157,7 @@ public class EventServiceImpl implements EventService {
         return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsByLocationAndInterestTag(
             String city,
@@ -175,6 +181,7 @@ public class EventServiceImpl implements EventService {
         return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsByDateAndInterestTag(
             LocalDateTime startDate,
@@ -199,6 +206,7 @@ public class EventServiceImpl implements EventService {
         return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public boolean doesUserBelongsToEvent(String email, UUID eventId) {
         if (!eventRepository.existsById(eventId)) {
@@ -208,6 +216,7 @@ public class EventServiceImpl implements EventService {
         return eventRepository.isUserInEvent(email, eventId, EventStatus.ACTIVE);
     }
 
+    @Transactional
     @Override
     public EventResponse createEvent(EventRequest eventRequest) {
         validateEventDate(
@@ -232,6 +241,7 @@ public class EventServiceImpl implements EventService {
         return this.getEventById(event.getEventId());
     }
 
+    @Transactional
     @Override
     public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
         Event event = eventValidator.validateEventExists(eventId);
@@ -293,6 +303,7 @@ public class EventServiceImpl implements EventService {
     }
 
 
+    @Transactional
     @Override
     public void deleteEvent(UUID eventId) {
         Event event = eventRepository.findByEventId(eventId, EventStatus.ACTIVE);
@@ -308,6 +319,8 @@ public class EventServiceImpl implements EventService {
 
         eventsNotifier.onEventCancelled(event);
     }
+
+    @Transactional(readOnly = true)
     @Override
     public Page<EventResponse> getEventsCreatedByCurrentUser(
             int page,
