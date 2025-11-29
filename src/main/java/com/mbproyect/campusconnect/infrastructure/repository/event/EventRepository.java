@@ -17,11 +17,13 @@ import java.util.UUID;
 @Repository
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
+    // Excludes events where the user is either the organiser or a participant
     @Query("""
         SELECT e FROM Event e
         WHERE e.location.city = :city
         AND e.eventStatus = :status
         AND e.organiser.email <> :excludedEmail
+        AND :excludedEmail NOT IN (SELECT p.email FROM e.participants p)
     """)
     Page<Event> findByLocation_City(
             @Param("city") String locationCity,
@@ -30,11 +32,13 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             Pageable pageable
     );
 
+    // Excludes events where the user is either the organiser or a participant
     @Query("""
         SELECT e FROM Event e 
         WHERE e.startDate >= :date 
         AND e.eventStatus = :status 
         AND e.organiser.email <> :excludedEmail
+        AND :excludedEmail NOT IN (SELECT p.email FROM e.participants p)
         ORDER BY e.startDate ASC
     """)
     Page<Event> getUpcomingEvents (
@@ -44,6 +48,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             Pageable pageable
     );
 
+    // Excludes events where the user is either the organiser or a participant
     @Query("""
         SELECT e FROM Event e
         JOIN e.eventBio b
@@ -51,6 +56,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
         WHERE t IN :tags
         AND e.eventStatus = :status
         AND e.organiser.email <> :excludedEmail
+        AND :excludedEmail NOT IN (SELECT p.email FROM e.participants p)
     """)
     Page<Event> getEventsByAnyTag(
             @Param("tags") Set<InterestTag> tags,
@@ -79,6 +85,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             Pageable pageable
     );
 
+    // Excludes events where the user is either the organiser or a participant
     @Query("""
         SELECT e FROM Event e
         JOIN e.eventBio b
@@ -87,6 +94,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
         AND t IN :tags
         AND e.eventStatus = :status
         AND e.organiser.email <> :excludedEmail
+        AND :excludedEmail NOT IN (SELECT p.email FROM e.participants p)
     """)
     Page<Event> findByLocation_CityAndEventBio_InterestTags(
             @Param("city") String locationCity,
@@ -96,6 +104,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             Pageable pageable
     );
 
+    // Excludes events where the user is either the organiser or a participant
     @Query("""
         SELECT e FROM Event e
         JOIN e.eventBio b
@@ -104,6 +113,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
         AND t IN :tags
         AND e.eventStatus = :status
         AND e.organiser.email <> :excludedEmail
+        AND :excludedEmail NOT IN (SELECT p.email FROM e.participants p)
     """)
     Page<Event> findByStartDateAndEventBio_InterestTags(
             @Param("date") LocalDateTime startDate,
