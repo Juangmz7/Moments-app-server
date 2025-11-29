@@ -134,8 +134,8 @@ public class EventChatMessageService implements ChatMessageService {
         // Validate if user belongs to event
         User user = validateUser(eventChat.getEvent().getEventId());
 
-        var sort = Sort.by(Sort.Direction.DESC, "sentAt")
-                .and(Sort.by(Sort.Direction.DESC, "id"));
+        var sort = Sort.by(Sort.Direction.ASC, "sentAt")
+                .and(Sort.by(Sort.Direction.ASC, "id"));
         var pageable = PageRequest.of(page, size, sort);
 
         // Fetch messages

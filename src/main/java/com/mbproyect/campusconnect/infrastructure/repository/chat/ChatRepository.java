@@ -16,13 +16,13 @@ public interface ChatRepository extends JpaRepository<EventChat, UUID> {
     EventChat findEventChatById(UUID id);
 
     @Query("""
-        SELECT DISTINCT chat
-        FROM EventChat chat
+        SELECT chat FROM EventChat chat
         JOIN chat.event event
         JOIN event.organiser organiser
         LEFT JOIN event.participants participant
         WHERE event.eventStatus = :status
         AND (organiser.email = :email OR participant.email = :email)
+        ORDER BY (SELECT MAX(m.sentAt) FROM chat.messages m) DESC
     """)
     Page<EventChat> getUserChats(
             @Param("email") String email,

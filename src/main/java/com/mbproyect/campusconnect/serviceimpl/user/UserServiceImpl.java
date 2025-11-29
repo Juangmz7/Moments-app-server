@@ -73,7 +73,6 @@ public class UserServiceImpl implements UserService {
         User actualUser = this.findUserByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        // var sort = Sort.by(Sort.Direction.DESC, "messages.sentAt");
         var pageable = PageRequest.of(page, size);
 
         Page<EventChat> chats = chatRepository.getUserChats(

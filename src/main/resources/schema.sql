@@ -15,7 +15,7 @@
 -- DROP TABLE IF EXISTS users CASCADE;
 -- DROP TABLE IF EXISTS user_profile CASCADE;
 --
--- -- 1. User Profile
+-- -- -- 1. User Profile
 -- CREATE TABLE user_profile (
 --     id UUID PRIMARY KEY,
 --     user_name VARCHAR(255) NOT NULL UNIQUE,
@@ -87,7 +87,7 @@
 -- -- 6. Event Participant
 -- CREATE TABLE event_participant (
 --     id UUID PRIMARY KEY,
---     email VARCHAR(255) NOT NULL UNIQUE,
+--     email VARCHAR(255) NOT NULL,
 --     user_profile_id UUID,
 --     event_id UUID,
 --     FOREIGN KEY (user_profile_id) REFERENCES user_profile(id),
@@ -195,22 +195,4 @@ VALUES
 INSERT INTO event_chat (id, event_id)
 VALUES
     ('c0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001')
-    ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO chat_message (id, encrypted_text, sent_at, chat_id, sender_id)
-VALUES
-    (
-        '30000000-0000-0000-0000-000000000001',
-        'Hello everyone!',
-        '2025-12-01 09:55:00',
-        'c0000000-0000-0000-0000-000000000001',
-        'a0000000-0000-0000-0000-000000000001'
-    ),
-    (
-        '30000000-0000-0000-0000-000000000002',
-        'Hi Alice, excited to be here!',
-        '2025-12-01 09:56:00',
-        'c0000000-0000-0000-0000-000000000001',
-        'b0000000-0000-0000-0000-000000000002'
-    )
     ON CONFLICT (id) DO NOTHING;
