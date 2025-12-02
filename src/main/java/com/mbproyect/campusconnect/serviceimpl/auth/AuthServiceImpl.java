@@ -2,6 +2,7 @@ package com.mbproyect.campusconnect.serviceimpl.auth;
 
 import com.mbproyect.campusconnect.config.exceptions.auth.InvalidTokenException;
 import com.mbproyect.campusconnect.config.exceptions.user.UserAlreadyExistsException;
+import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.auth.request.RefreshTokenRequest;
 import com.mbproyect.campusconnect.dto.auth.request.TokenRequest;
 import com.mbproyect.campusconnect.dto.auth.request.UserAuthRequest;
@@ -75,7 +76,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Helper to generate user tokens when login
-    private UserAuthenticationResponse generateAuthTokens (String email) {
+    private UserAuthenticationResponse generateAuthTokens (
+            String email,
+            String username
+    ) {
         String jwt = jwtService.generateToken(email);
         UUID refreshToken = EncryptionUtil.generateToken();
 
@@ -84,7 +88,12 @@ public class AuthServiceImpl implements AuthService {
                 key, refreshToken.toString(), TokenType.REFRESH_TOKEN.getTtlMinutes()
         );
 
-        return new UserAuthenticationResponse(email, jwt, refreshToken);
+        return new UserAuthenticationResponse(
+                email,
+                username,
+                jwt,
+                refreshToken
+        );
     }
 
 
@@ -146,8 +155,17 @@ public class AuthServiceImpl implements AuthService {
                 verificationToken
         );
 
+        Optional<User> user = userService.findUserByEmail(request.getEmail());
+
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User nor found");
+        }
+
         UserAuthenticationResponse response = this
-                .generateAuthTokens(request.getEmail());
+                .generateAuthTokens(
+                        request.getEmail(),
+                        user.get().getUserProfile().getUserName()
+                );
 
         // Delete code from db (token is valid for one use)
         String key = TokenType
@@ -177,12 +195,18 @@ public class AuthServiceImpl implements AuthService {
         // Check if user already exists
         Optional<User> user = userRepository.findByEmail(email);
 
+        User newUser = null;
         if (user.isEmpty()) {
-            userService.createUser(email);
+            newUser = userService.createUser(email);
         }
 
         // Generate access token
-        return this.generateAuthTokens(email);
+        return this.generateAuthTokens(
+                email,
+                user.isEmpty()
+                        ? newUser.getUserProfile().getUserName()
+                        : user.get().getUserProfile().getUserName()
+        );
     }
 
     @Transactional
@@ -191,6 +215,12 @@ public class AuthServiceImpl implements AuthService {
         validateToken(
                 TokenType.REFRESH_TOKEN, request.getEmail(), request.getRefreshToken()
         );
+
+        Optional<User> user = userRepository.findByEmail(request.getEmail());
+
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
 
         String jwt = jwtService.generateToken(request.getEmail());
         UUID refreshToken = EncryptionUtil.generateToken();
@@ -202,7 +232,10 @@ public class AuthServiceImpl implements AuthService {
         );
 
         return new UserAuthenticationResponse(
-                request.getEmail(), jwt, refreshToken
+                request.getEmail(),
+                user.get().getUserProfile().getUserName(),
+                jwt,
+                refreshToken
         );
     }
 

@@ -11,6 +11,8 @@ public class UserAuthenticationResponse {
 
     private String email;
 
+    private String username;
+
     private String accessToken;
 
     private UUID refreshToken;
