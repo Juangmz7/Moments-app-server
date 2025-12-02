@@ -18,11 +18,8 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-
-    public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
+    public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     /**
@@ -51,9 +48,6 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2SuccessHandler)
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
