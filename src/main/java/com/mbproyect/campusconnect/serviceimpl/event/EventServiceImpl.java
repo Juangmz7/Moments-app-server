@@ -122,8 +122,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public Page<EventResponse> getEventsByDateAscending(
             LocalDateTime eventDate,
-            int size,
-            int page
+            int page,
+            int size
     ) {
         var pageable = PageRequest.of(page, size);
         String currentUserEmail = userService.getCurrentUser();
