@@ -165,7 +165,7 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{eventId}/participants/")
+    @DeleteMapping("/{eventId}/participants")
     public ResponseEntity<Void> cancelEventSubscription(
             @PathVariable UUID eventId
     ) {
