@@ -137,4 +137,5 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             @Param("status") EventStatus status
     );
 
+    Event findByChat_IdAndEventStatus(UUID chatId, EventStatus eventStatus);
 }

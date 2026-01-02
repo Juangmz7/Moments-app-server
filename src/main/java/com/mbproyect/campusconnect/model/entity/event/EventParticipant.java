@@ -28,4 +28,6 @@ public class EventParticipant {
     @JoinColumn(name = "event_id")
     private Event event;
 
+    private UUID lastMessageIdSeen;
+
 }

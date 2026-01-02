@@ -49,7 +49,8 @@ public class UserController {
             @RequestParam int page,
             @RequestParam int size
     ) {
-        return ResponseEntity.ok(userService.getChats(page, size));
+        var response = userService.getChats(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/location")

@@ -16,6 +16,7 @@ import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import com.mbproyect.campusconnect.shared.validation.user.UserValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class EventParticipantServiceImpl implements EventParticipantService {
             EventParticipantRepository eventParticipantRepository,
             UserValidator userValidator,
             EventEventsNotifier eventsNotifier,
-            UserService userService,
+            @Lazy UserService userService,
             UserRepository userRepository
     ) {
         this.eventValidator = eventValidator;
@@ -159,5 +160,18 @@ public class EventParticipantServiceImpl implements EventParticipantService {
 
         eventsNotifier.onParticipantUnsubscribed(participant.getEvent(), participant);
 
+    }
+
+    @Override
+    public EventParticipant getParticipantByEmailAndChatId(UUID chatId, String email) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+        if (chatId == null) {
+            throw new IllegalArgumentException("Chat id cannot be null");
+        }
+
+        return eventParticipantRepository.findByEmailAndChatId(chatId, email)
+                .orElseThrow(() -> new UserNotFoundException("Participant not found"));
     }
 }

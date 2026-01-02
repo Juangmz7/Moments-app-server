@@ -1,6 +1,7 @@
 package com.mbproyect.campusconnect.service.chat;
 
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
+import com.mbproyect.campusconnect.dto.chat.request.MarkChatReadRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -29,4 +30,5 @@ public interface ChatMessageService {
             @Min(1) @Max(50) int size
     );
 
+    void markRead(UUID chatId, MarkChatReadRequest request);
 }

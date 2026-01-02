@@ -1,6 +1,7 @@
 package com.mbproyect.campusconnect.serviceimpl.chat;
 
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
+import com.mbproyect.campusconnect.dto.chat.request.MarkChatReadRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
 import com.mbproyect.campusconnect.service.chat.ChatMessageService;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,11 @@ public class PrivateChatMessageService implements ChatMessageService {
             int size
     ) {
         return null; // TODO
+    }
+
+    @Override
+    public void markRead(UUID chatId, MarkChatReadRequest request) {
+        //TODO
     }
 
 }

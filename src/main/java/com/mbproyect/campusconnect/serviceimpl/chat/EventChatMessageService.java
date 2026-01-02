@@ -3,17 +3,25 @@ package com.mbproyect.campusconnect.serviceimpl.chat;
 import com.mbproyect.campusconnect.config.exceptions.chat.ChatNotFoundException;
 import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.chat.request.ChatMessageRequest;
+import com.mbproyect.campusconnect.dto.chat.request.MarkChatReadRequest;
 import com.mbproyect.campusconnect.dto.chat.response.ChatMessageResponse;
 import com.mbproyect.campusconnect.infrastructure.mappers.chat.ChatMessageMapper;
 import com.mbproyect.campusconnect.infrastructure.repository.chat.ChatMessageRepository;
 import com.mbproyect.campusconnect.infrastructure.repository.chat.ChatRepository;
+import com.mbproyect.campusconnect.infrastructure.repository.event.EventOrganiserRepository;
+import com.mbproyect.campusconnect.infrastructure.repository.event.EventParticipantRepository;
+import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserProfileRepository;
 import com.mbproyect.campusconnect.infrastructure.repository.user.UserRepository;
 import com.mbproyect.campusconnect.model.entity.chat.ChatMessage;
 import com.mbproyect.campusconnect.model.entity.chat.EventChat;
+import com.mbproyect.campusconnect.model.entity.event.Event;
+import com.mbproyect.campusconnect.model.entity.event.EventParticipant;
 import com.mbproyect.campusconnect.model.entity.user.User;
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;
+import com.mbproyect.campusconnect.model.enums.EventStatus;
 import com.mbproyect.campusconnect.service.chat.ChatMessageService;
+import com.mbproyect.campusconnect.service.event.EventParticipantService;
 import com.mbproyect.campusconnect.service.event.EventService;
 import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.util.EncryptionUtil;
@@ -38,6 +46,10 @@ public class EventChatMessageService implements ChatMessageService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final EventService eventService;
+    private final EventParticipantService eventParticipantService;
+    private final EventParticipantRepository eventParticipantRepository;
+    private final EventRepository eventRepository;
+    private final EventOrganiserRepository eventOrganiserRepository;
 
     public EventChatMessageService (
             ChatMessageRepository chatMessageRepository,
@@ -45,13 +57,17 @@ public class EventChatMessageService implements ChatMessageService {
             EncryptionUtil encryptionUtil,
             UserService userService,
             UserRepository userRepository,
-            EventService eventService) {
+            EventService eventService, EventParticipantService eventParticipantService, EventParticipantRepository eventParticipantRepository, EventRepository eventRepository, EventOrganiserRepository eventOrganiserRepository) {
         this.chatMessageRepository = chatMessageRepository;
         this.chatRepository = chatRepository;
         this.encryptionUtil = encryptionUtil;
         this.userService = userService;
         this.userRepository = userRepository;
         this.eventService = eventService;
+        this.eventParticipantService = eventParticipantService;
+        this.eventParticipantRepository = eventParticipantRepository;
+        this.eventRepository = eventRepository;
+        this.eventOrganiserRepository = eventOrganiserRepository;
     }
 
     private boolean isUserAuthorized (String email, UUID eventId) {
@@ -159,6 +175,35 @@ public class EventChatMessageService implements ChatMessageService {
 
         // Return new PageImpl to preserve pagination metadata
         return new PageImpl<>(responseList, pageable, messagesPage.getTotalElements());
+    }
+
+    @Override
+    public void markRead(UUID chatId, MarkChatReadRequest request) {
+        String email = userService.getCurrentUser();
+
+        Event event = eventRepository
+                .findByChat_IdAndEventStatus(chatId, EventStatus.ACTIVE);
+
+        if (chatId == null) {
+            throw new ChatNotFoundException("Chat not found");
+        }
+
+        // If user is the organizer
+        var organiser = event.getOrganiser();
+
+        if (email.equals(organiser.getEmail())) {
+            organiser.setLastMessageSeen(request.messageId());
+            eventOrganiserRepository.save(organiser);
+            return;
+        }
+
+        // If the user is an event participant
+        EventParticipant participant = eventParticipantService
+                .getParticipantByEmailAndChatId(chatId, email);
+
+        // Update the last message seen
+        participant.setLastMessageIdSeen(request.messageId());
+        eventParticipantRepository.save(participant);
     }
 
 }

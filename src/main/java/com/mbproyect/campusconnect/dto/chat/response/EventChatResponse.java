@@ -20,5 +20,7 @@ public class EventChatResponse {
     private ChatMessageResponse lastMessage;
 
     private String eventImage;
+
+    private long unseenMessagesCount;
     
 }

@@ -29,4 +29,12 @@ public interface ChatRepository extends JpaRepository<EventChat, UUID> {
             @Param("status") EventStatus status,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT COUNT(m)
+    FROM ChatMessage m
+    WHERE m.chat.id = (SELECT ref.chat.id FROM ChatMessage ref WHERE ref.id = :messageId)
+    AND m.sentAt > (SELECT ref.sentAt FROM ChatMessage ref WHERE ref.id = :messageId)
+""")
+    long countMessagesAfter(@Param("messageId") UUID messageId);
 }

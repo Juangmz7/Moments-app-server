@@ -1,6 +1,7 @@
 package com.mbproyect.campusconnect.service.event;
 
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
+import com.mbproyect.campusconnect.model.entity.event.EventParticipant;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -34,4 +35,6 @@ public interface EventParticipantService {
     EventParticipantResponse subscribeToEvent(@NotNull UUID eventId);
 
     void cancelEventSubscription(@NotNull UUID participantId);
+
+    EventParticipant getParticipantByEmailAndChatId(UUID chatId, String email);
 }

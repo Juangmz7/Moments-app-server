@@ -18,7 +18,8 @@ public class ChatMapper {
             EventChat chat,
             ChatMessage lastMessage,
             String decryptedContent,
-            UUID currentUserId
+            UUID currentUserId,
+            long unSeenMessageCount
     ) {
         if (chat == null) {
             throw new IllegalArgumentException("Chat cannot be null");
@@ -42,7 +43,8 @@ public class ChatMapper {
                 chat.getEvent() != null ? chat.getEvent().getEventId() : null,
                 chat.getEvent() != null ? chat.getEvent().getName() : null,
                 lastMessageResponse,
-                eventImage
+                eventImage,
+                unSeenMessageCount
         );
     }
 }
