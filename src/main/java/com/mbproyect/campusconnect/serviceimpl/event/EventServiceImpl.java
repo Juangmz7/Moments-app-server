@@ -27,7 +27,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -88,6 +92,24 @@ public class EventServiceImpl implements EventService {
 
         if (duration > 24 * 60) {
             throw new InvalidDateException("Event duration cannot exceed 24 hours");
+        }
+    }
+
+    // Helper method to save file to disk
+    private String uploadImage(MultipartFile file) {
+        try {
+            String UPLOAD_DIR = "uploads/events/";
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(filename);
+
+            file.transferTo(filePath); // Save file
+
+            return filename; // Return only the name to store in DB
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to store image", e);
         }
     }
 
@@ -224,7 +246,7 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventResponse createEvent(EventRequest eventRequest) {
+    public EventResponse createEvent(EventRequest eventRequest, MultipartFile imageFile) {
         validateEventDate(
                 eventRequest.getStartDate(),
                 eventRequest.getEndDate()
@@ -233,7 +255,14 @@ public class EventServiceImpl implements EventService {
         String email = userService.getCurrentUser();
         Event event = EventMapper.fromRequest(eventRequest);
 
-        // Fetch the organiser linked to email
+        // Validate imageFile
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = uploadImage(imageFile);
+            // Ensure EventBio exists
+            if (event.getEventBio() == null) event.setEventBio(new EventBio());
+            event.getEventBio().setImageUrl(imagePath);
+        }
+
         EventOrganiser organiser = eventOrganiserService.getEventOrganiserByEmail(email, event);
         event.setOrganiser(organiser);
         eventRepository.save(event);
@@ -249,7 +278,11 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
+    public EventResponse updateEvent(
+            EventRequest eventRequest,
+            UUID eventId,
+            MultipartFile imageFile
+    ) {
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
 
@@ -290,6 +323,26 @@ public class EventServiceImpl implements EventService {
             originalValues.add("End date: " + event.getEndDate());
             changedValues.add("End date: " + eventRequest.getEndDate());
             event.setEndDate(eventRequest.getEndDate());
+        }
+
+        EventBio currentBio = event.getEventBio();
+        EventBio newBioRequest = EventBioMapper.fromRequest(eventRequest.getEventBio());
+
+        // Check Description changes
+        if (!Objects.equals(currentBio.getDescription(), newBioRequest.getDescription())) {
+            originalValues.add("Description: " + currentBio.getDescription());
+            changedValues.add("Description: " + newBioRequest.getDescription());
+            currentBio.setDescription(newBioRequest.getDescription());
+        }
+
+        // Check Image changes
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String newImagePath = uploadImage(imageFile);
+            if (!Objects.equals(currentBio.getImageUrl(), newImagePath)) {
+                originalValues.add("Image: " + currentBio.getImageUrl());
+                changedValues.add("Image changed");
+                currentBio.setImageUrl(newImagePath);
+            }
         }
 
         if (!changedValues.isEmpty()) {

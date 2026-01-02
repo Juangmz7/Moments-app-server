@@ -21,7 +21,7 @@ public class EventBio {
 
     private String description;
 
-    private byte [] image;
+    private String imageUrl; // O multipartFile
 
     /**
      * Creates a table for the enum tag

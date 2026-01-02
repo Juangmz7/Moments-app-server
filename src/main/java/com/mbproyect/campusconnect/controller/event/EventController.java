@@ -12,6 +12,7 @@ import com.mbproyect.campusconnect.service.event.EventService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -132,9 +133,12 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<EventResponse> createEvent(
-            @Valid @RequestBody EventRequest eventRequest
+            @Valid @RequestBody EventRequest eventRequest,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) {
-        EventResponse response = eventService.createEvent(eventRequest);
+        EventResponse response = eventService.createEvent(
+                eventRequest, imageFile
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -151,9 +155,12 @@ public class EventController {
     @PutMapping("/{eventId}")
     public ResponseEntity<EventResponse> updateEvent(
             @Valid @RequestBody EventRequest eventRequest,
-            @PathVariable UUID eventId
+            @PathVariable UUID eventId,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) {
-        EventResponse response = eventService.updateEvent(eventRequest, eventId);
+        EventResponse response = eventService.updateEvent(
+                eventRequest, eventId, imageFile
+        );
         return ResponseEntity.ok(response);
     }
 

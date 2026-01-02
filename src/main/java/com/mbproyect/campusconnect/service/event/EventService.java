@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -65,9 +66,16 @@ public interface EventService {
              @NotNull UUID eventId
      );
 
-     EventResponse createEvent (@Valid EventRequest eventRequest);
+     EventResponse createEvent (
+             @Valid EventRequest eventRequest,
+             MultipartFile imageFile
+     );
 
-     EventResponse updateEvent (@Valid EventRequest eventRequest, @NotNull UUID eventId);
+     EventResponse updateEvent (
+             @Valid EventRequest eventRequest,
+             @NotNull UUID eventId,
+             MultipartFile imageFile
+     );
 
      void deleteEvent (@NotNull UUID eventId);
 
