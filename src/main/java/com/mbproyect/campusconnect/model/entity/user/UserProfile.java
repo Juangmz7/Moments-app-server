@@ -54,9 +54,7 @@ public class UserProfile {
     @Embedded
     private UserLocation userLocation;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @JdbcTypeCode(Types.VARBINARY)
-    private byte[] profilePicture;
+    // Stores the filename/path of the uploaded profile picture
+    private String profilePicture;
 
 }

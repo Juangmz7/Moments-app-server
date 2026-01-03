@@ -6,8 +6,6 @@ import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.user.UserProfile;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.UUID;
 
 @Component
@@ -29,16 +27,14 @@ public class ChatMessageMapper {
             String decryptedText,
             UUID actualUserId
     ) {
-        byte [] image = entity.getSender().getProfilePicture();
-        String eventImage = null;
-        if (image != null) {
-            eventImage = Base64.getEncoder().encodeToString(image);
-        }
+        // Now profilePicture is a String filename/path, just pass it through
+        String senderImage = entity.getSender().getProfilePicture();
+
         return new ChatMessageResponse(
                 entity.getId(),
                 entity.getSender().getId(),
                 entity.getSender().getUserName(),
-                eventImage,
+                senderImage,
                 decryptedText,
                 entity.getChat().getId(),
                 entity.getSentAt(),

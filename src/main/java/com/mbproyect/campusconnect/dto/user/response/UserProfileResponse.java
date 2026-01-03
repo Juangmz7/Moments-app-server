@@ -33,5 +33,6 @@ public class UserProfileResponse {
 
     private UserLocation userLocation;
 
-    private byte[] profilePicture;
+    // Filename/path of the stored profile picture
+    private String profilePicture;
 }

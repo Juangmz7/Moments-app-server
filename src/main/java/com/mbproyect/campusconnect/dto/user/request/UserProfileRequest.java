@@ -39,6 +39,7 @@ public class UserProfileRequest {
     @NotNull
     private UserLocation userLocation;
 
-    private byte[] profilePicture;
+    // Stores the filename/path of the uploaded profile picture (if any)
+    private String profilePicture;
 
 }
