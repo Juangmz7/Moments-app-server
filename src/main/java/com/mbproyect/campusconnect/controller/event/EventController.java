@@ -1,18 +1,21 @@
 package com.mbproyect.campusconnect.controller.event;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
 import com.mbproyect.campusconnect.dto.event.response.EventParticipantResponse;
 import com.mbproyect.campusconnect.dto.event.response.EventResponse;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
-import com.mbproyect.campusconnect.service.auth.AuthService;
 import com.mbproyect.campusconnect.service.event.EventParticipantService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.mbproyect.campusconnect.service.event.EventService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,10 +28,12 @@ public class EventController {
 
     private final EventService eventService;
     private final EventParticipantService eventParticipantService;
+    private final ObjectMapper objectMapper;
 
-    public EventController (EventService eventService, EventParticipantService eventParticipantService) {
+    public EventController (EventService eventService, EventParticipantService eventParticipantService, ObjectMapper objectMapper) {
         this.eventService = eventService;
         this.eventParticipantService = eventParticipantService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -45,8 +50,13 @@ public class EventController {
      * Example: /api/events/by-tag?tags=MUSIC&tags=SPORTS
      */
     @GetMapping("/by-any-tag")
-    public ResponseEntity<Set<EventResponse>> getEventsByAnyTag(@RequestParam Set<InterestTag> tags) {
-        Set<EventResponse> responses = eventService.getEventsByAnyTag(tags);
+    public ResponseEntity<Page<EventResponse>> getEventsByAnyTag(
+            @RequestParam Set<InterestTag> tags,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        Page<EventResponse> responses = eventService
+                .getEventsByAnyTag(tags, page, size);
         return ResponseEntity.ok(responses);
     }
 
@@ -55,8 +65,47 @@ public class EventController {
      * Example: /api/events/by-date?eventDate=2025-10-15
      */
     @GetMapping("/by-date")
-    public ResponseEntity<List<EventResponse>> getEventsByDateAscending(@RequestParam LocalDateTime eventDate) {
-        List<EventResponse> responses = eventService.getEventsByDateAscending(eventDate);
+    public ResponseEntity<Page<EventResponse>> getEventsByDateAscending(
+            @RequestParam LocalDateTime eventDate,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        Page<EventResponse> responses = eventService
+                .getEventsByDateAscending(eventDate, page, size);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/by-date-and-interests")
+    public ResponseEntity<Page<EventResponse>> getEventsByDateAndInterestTags(
+            @RequestParam LocalDateTime eventDate,
+            @RequestParam Set<InterestTag> tags,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        Page<EventResponse> responses = eventService
+                .getEventsByDateAndInterestTag(
+                        eventDate,
+                        tags,
+                        page,
+                        size
+                );
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/by-location-and-interests")
+    public ResponseEntity<Page<EventResponse>> getEventsByLocationAndInterestTags(
+            @RequestParam String city,
+            @RequestParam Set<InterestTag> tags,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        Page<EventResponse> responses = eventService
+                .getEventsByLocationAndInterestTag(
+                        city,
+                        tags,
+                        page,
+                        size
+                );
         return ResponseEntity.ok(responses);
     }
 
@@ -65,33 +114,42 @@ public class EventController {
      * Example: /api/events/by-location?city=Leuven
      */
     @GetMapping("/by-location")
-    public ResponseEntity<Set<EventResponse>> getEventsByLocation(
-            @RequestParam String city
+    public ResponseEntity<Page<EventResponse>> getEventsByLocation(
+            @RequestParam String city,
+            @RequestParam int page,
+            @RequestParam int size
     ) {
-        Set<EventResponse> responses = eventService.getEventsByLocation(city);
+        Page<EventResponse> responses = eventService
+                .getEventsByLocation(city, page, size);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{eventId}/participants")
-    public ResponseEntity<Set<EventParticipantResponse>> getEventParticipants(
-            @PathVariable UUID eventId
+    public ResponseEntity<Page<EventParticipantResponse>> getEventParticipants(
+            @PathVariable UUID eventId,
+            @RequestParam int page,
+            @RequestParam int size
     ) {
-        return ResponseEntity.ok(eventParticipantService.getParticipantsByEvent(eventId));
+        return ResponseEntity.ok(
+                eventParticipantService
+                        .getParticipantsByEvent(eventId, page, size)
+        );
     }
 
-    // TODO: Implement this by looking if the user who sends the token is a eventId participant
-//    @GetMapping("/chat/{eventId}/")
-//    public ResponseEntity<Set<EventParticipantResponse>> getChatId(
-//            @PathVariable UUID eventId
-//    ) {
-//        return ResponseEntity.ok(eventParticipantService.getChatId(eventId));
-//    }
-
-    @PostMapping
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<EventResponse> createEvent(
-            @Valid @RequestBody EventRequest eventRequest
-    ) {
-        EventResponse response = eventService.createEvent(eventRequest);
+            @RequestPart("data") String eventRequestStr,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
+    ) throws JsonProcessingException {
+
+        EventRequest eventRequest = objectMapper
+                .readValue(eventRequestStr, EventRequest.class);
+
+        System.out.println(eventRequest);
+
+        EventResponse response = eventService.createEvent(
+                eventRequest, imageFile
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -108,9 +166,12 @@ public class EventController {
     @PutMapping("/{eventId}")
     public ResponseEntity<EventResponse> updateEvent(
             @Valid @RequestBody EventRequest eventRequest,
-            @PathVariable UUID eventId
+            @PathVariable UUID eventId,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) {
-        EventResponse response = eventService.updateEvent(eventRequest, eventId);
+        EventResponse response = eventService.updateEvent(
+                eventRequest, eventId, imageFile
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -122,7 +183,7 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{eventId}/participants/")
+    @DeleteMapping("/{eventId}/participants")
     public ResponseEntity<Void> cancelEventSubscription(
             @PathVariable UUID eventId
     ) {
@@ -134,8 +195,12 @@ public class EventController {
     * Get all the events created by a user
     */
     @GetMapping("/userCreatedEvents")
-    public ResponseEntity<List<EventResponse>> getMyEvents() {
-        List<EventResponse> responses = eventService.getEventsCreatedByCurrentUser();
+    public ResponseEntity<Page<EventResponse>> getMyEvents(
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        Page<EventResponse> responses = eventService
+                .getEventsCreatedByCurrentUser(page, size);
         return ResponseEntity.ok(responses);
     }
    

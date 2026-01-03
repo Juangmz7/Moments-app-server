@@ -22,7 +22,7 @@ public interface JwtService {
      *  Token validation
      *  Looks for date expiration and valid username
      */
-    boolean validateToken(String token, String email);
+    boolean validateToken(String token);
 
     String extractAuthToken(HttpServletRequest request);
 

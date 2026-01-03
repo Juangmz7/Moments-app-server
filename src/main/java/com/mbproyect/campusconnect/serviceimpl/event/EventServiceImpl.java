@@ -1,5 +1,6 @@
 package com.mbproyect.campusconnect.serviceimpl.event;
 
+import com.mbproyect.campusconnect.config.exceptions.event.EventNotFoundException;
 import com.mbproyect.campusconnect.config.exceptions.event.InvalidDateException;
 import com.mbproyect.campusconnect.config.exceptions.user.UserNotFoundException;
 import com.mbproyect.campusconnect.dto.event.request.EventRequest;
@@ -7,7 +8,6 @@ import com.mbproyect.campusconnect.dto.event.response.EventResponse;
 import com.mbproyect.campusconnect.events.contract.event.EventEventsNotifier;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventBioMapper;
 import com.mbproyect.campusconnect.infrastructure.mappers.event.EventMapper;
-import com.mbproyect.campusconnect.infrastructure.mappers.event.EventOrganiserMapper;
 import com.mbproyect.campusconnect.model.entity.chat.EventChat;
 import com.mbproyect.campusconnect.model.entity.event.Event;
 import com.mbproyect.campusconnect.model.entity.event.EventBio;
@@ -16,19 +16,25 @@ import com.mbproyect.campusconnect.model.entity.user.User;
 import com.mbproyect.campusconnect.model.enums.EventStatus;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import com.mbproyect.campusconnect.infrastructure.repository.event.EventRepository;
-import com.mbproyect.campusconnect.service.auth.TokenStorageService;
 import com.mbproyect.campusconnect.service.chat.EventChatService;
 import com.mbproyect.campusconnect.service.event.EventOrganiserService;
 import com.mbproyect.campusconnect.service.event.EventService;
 import com.mbproyect.campusconnect.service.user.UserService;
 import com.mbproyect.campusconnect.shared.validation.event.EventValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j  // For showing logs
@@ -56,12 +62,10 @@ public class EventServiceImpl implements EventService {
         this.eventOrganiserService = eventOrganiserService;
     }
 
-    private Set<EventResponse> eventSetToResponse (Set<Event> events) {
-        if (events.isEmpty()) return Set.of();
+    private Page<EventResponse> eventPageToResponse(Page<Event> events) {
+        if (events.isEmpty()) return Page.empty();
 
-        return events.stream()
-                .map(EventMapper::toResponse)
-                .collect(Collectors.toSet());
+        return events.map(EventMapper::toResponse);
     }
 
     private void validateEventDate(LocalDateTime start, LocalDateTime end) {
@@ -91,6 +95,25 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    // Helper method to save file to disk
+    private String uploadImage(MultipartFile file) {
+        try {
+            String UPLOAD_DIR = "uploads/events/";
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(filename);
+
+            file.transferTo(filePath); // Save file
+
+            return filename; // Return only the name to store in DB
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to store image", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public EventResponse getEventById(UUID id) {
         Event event = eventValidator.validateEventExists(id);
@@ -100,38 +123,130 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toResponse(event);  // Parse event to event
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Set<EventResponse> getEventsByAnyTag(Set<InterestTag> tags) {
-        Set<Event> events = eventRepository.getEventsByAnyTag(tags, EventStatus.ACTIVE);
+    public Page<EventResponse> getEventsByAnyTag(
+            Set<InterestTag> tags,
+            int page,
+            int size
+    ) {
+        var pageable = PageRequest.of(page, size);
+        String currentUserEmail = userService.getCurrentUser();
+
+        Page<Event> events = eventRepository
+                .getEventsByAnyTag(tags, EventStatus.ACTIVE, currentUserEmail, pageable);
 
         log.info("Returning events with interest tags:  {}", tags);
-        return eventSetToResponse(events);
+        return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<EventResponse> getEventsByDateAscending(LocalDateTime eventDate) {
-        List<Event> events = eventRepository.getUpcomingEvents(eventDate, EventStatus.ACTIVE);
+    public Page<EventResponse> getEventsByDateAscending(
+            LocalDateTime eventDate,
+            int page,
+            int size
+    ) {
+        var pageable = PageRequest.of(page, size);
+        String currentUserEmail = userService.getCurrentUser();
 
-        if (events.isEmpty()) return List.of();
+        Page<Event> events = eventRepository
+                .getUpcomingEvents(
+                        eventDate, EventStatus.ACTIVE, currentUserEmail, pageable
+                );
+
+        if (events.isEmpty()) return Page.empty();
 
         log.info("Returning events with date:  {}", eventDate);
 
-        return events.stream()
-                .map(EventMapper::toResponse)
-                .toList();
+        return events.map(EventMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Set<EventResponse> getEventsByLocation(String city) {
-        Set<Event> events = eventRepository.findByLocation_City(city);
+    public Page<EventResponse> getEventsByLocation(
+            String city,
+            int page,
+            int size
+    ) {
+        var pageable = PageRequest.of(page, size);
+        String currentUserEmail = userService.getCurrentUser();
+
+        Page<Event> events = eventRepository
+                .findByLocation_City(city, EventStatus.ACTIVE, currentUserEmail, pageable);
 
         log.info("Returning events in {}", city);
-
-        return eventSetToResponse(events);
+        return eventPageToResponse(events);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public EventResponse createEvent(EventRequest eventRequest) {
+    public Page<EventResponse> getEventsByLocationAndInterestTag(
+            String city,
+            Set<InterestTag> tags,
+            int page,
+            int size
+    ) {
+        var pageable = PageRequest.of(page, size);
+        String currentUserEmail = userService.getCurrentUser();
+
+        Page<Event> events = eventRepository
+                .findByLocation_CityAndEventBio_InterestTags(
+                        city,
+                        tags,
+                        EventStatus.ACTIVE,
+                        currentUserEmail,
+                        pageable
+                );
+
+        log.info("Returning events in {}, with interests: {}", city, tags);
+        return eventPageToResponse(events);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<EventResponse> getEventsByDateAndInterestTag(
+            LocalDateTime startDate,
+            Set<InterestTag> tags,
+            int page,
+            int size
+    ) {
+        // Updated to include sort by StartDate Ascending
+        var sort = Sort.by("startDate")
+                .ascending()
+                .and(
+                        Sort.by("eventId")
+                                .ascending());
+
+        var pageable = PageRequest.of(page, size, sort);
+        String currentUserEmail = userService.getCurrentUser();
+
+        Page<Event> events = eventRepository
+                .findByStartDateAndEventBio_InterestTags(
+                        startDate,
+                        tags,
+                        EventStatus.ACTIVE,
+                        currentUserEmail,
+                        pageable
+                );
+
+        log.info("Returning events the {}, with interests: {}", startDate, tags);
+        return eventPageToResponse(events);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public boolean doesUserBelongsToEvent(String email, UUID eventId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new EventNotFoundException("Event not found");
+        }
+
+        return eventRepository.isUserInEvent(email, eventId, EventStatus.ACTIVE);
+    }
+
+    @Transactional
+    @Override
+    public EventResponse createEvent(EventRequest eventRequest, MultipartFile imageFile) {
         validateEventDate(
                 eventRequest.getStartDate(),
                 eventRequest.getEndDate()
@@ -140,7 +255,14 @@ public class EventServiceImpl implements EventService {
         String email = userService.getCurrentUser();
         Event event = EventMapper.fromRequest(eventRequest);
 
-        // Fetch the organiser linked to email
+        // Validate imageFile
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = uploadImage(imageFile);
+            // Ensure EventBio exists
+            if (event.getEventBio() == null) event.setEventBio(new EventBio());
+            event.getEventBio().setImageUrl(imagePath);
+        }
+
         EventOrganiser organiser = eventOrganiserService.getEventOrganiserByEmail(email, event);
         event.setOrganiser(organiser);
         eventRepository.save(event);
@@ -154,8 +276,13 @@ public class EventServiceImpl implements EventService {
         return this.getEventById(event.getEventId());
     }
 
+    @Transactional
     @Override
-    public EventResponse updateEvent(EventRequest eventRequest, UUID eventId) {
+    public EventResponse updateEvent(
+            EventRequest eventRequest,
+            UUID eventId,
+            MultipartFile imageFile
+    ) {
         Event event = eventValidator.validateEventExists(eventId);
         eventValidator.validateEventIsActive(event);
 
@@ -198,6 +325,26 @@ public class EventServiceImpl implements EventService {
             event.setEndDate(eventRequest.getEndDate());
         }
 
+        EventBio currentBio = event.getEventBio();
+        EventBio newBioRequest = EventBioMapper.fromRequest(eventRequest.getEventBio());
+
+        // Check Description changes
+        if (!Objects.equals(currentBio.getDescription(), newBioRequest.getDescription())) {
+            originalValues.add("Description: " + currentBio.getDescription());
+            changedValues.add("Description: " + newBioRequest.getDescription());
+            currentBio.setDescription(newBioRequest.getDescription());
+        }
+
+        // Check Image changes
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String newImagePath = uploadImage(imageFile);
+            if (!Objects.equals(currentBio.getImageUrl(), newImagePath)) {
+                originalValues.add("Image: " + currentBio.getImageUrl());
+                changedValues.add("Image changed");
+                currentBio.setImageUrl(newImagePath);
+            }
+        }
+
         if (!changedValues.isEmpty()) {
             validateEventDate(eventRequest.getStartDate(), eventRequest.getEndDate());
 
@@ -215,9 +362,10 @@ public class EventServiceImpl implements EventService {
     }
 
 
+    @Transactional
     @Override
     public void deleteEvent(UUID eventId) {
-        Event event = eventRepository.findByEventId(eventId);
+        Event event = eventRepository.findByEventId(eventId, EventStatus.ACTIVE);
 
         // Validate if current user is the event organiser
         userService.validateCurrentUser(
@@ -230,22 +378,27 @@ public class EventServiceImpl implements EventService {
 
         eventsNotifier.onEventCancelled(event);
     }
+
+    @Transactional(readOnly = true)
     @Override
-    public List<EventResponse> getEventsCreatedByCurrentUser() {
+    public Page<EventResponse> getEventsCreatedByCurrentUser(
+            int page,
+            int size
+    ) {
+        var pageable = PageRequest.of(page, size);
+
         String email = userService.getCurrentUser(); // already available pattern
         User user = userService.findUserByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("No user for token"));
+                .orElseThrow(() -> new UserNotFoundException("No user for token"));
 
         UUID profileId = user.getUserProfile().getId();
-        List<Event> events = eventRepository.findEventsByCreator(profileId, EventStatus.ACTIVE);
+        Page<Event> events = eventRepository
+                .findEventsByCreator(profileId, EventStatus.ACTIVE, pageable);
 
         if (events.isEmpty()) {
-            return List.of();
+            return Page.empty();
         }
 
-        return events.stream()
-            .map(EventMapper::toResponse)
-            .toList();
-}
-
+        return events.map(EventMapper::toResponse);
+    }
 }

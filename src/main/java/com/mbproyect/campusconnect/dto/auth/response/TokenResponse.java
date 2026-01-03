@@ -2,19 +2,11 @@ package com.mbproyect.campusconnect.dto.auth.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class UserAuthenticationResponse {
-
-    private String email;
-
-    private String username;
-
+@NoArgsConstructor
+public class TokenResponse {
     private String accessToken;
-
-    private UUID refreshToken;
-
 }

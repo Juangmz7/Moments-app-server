@@ -11,6 +11,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -44,6 +45,7 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    @Transactional
     public void generateSecretKey() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
@@ -55,6 +57,7 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    @Transactional
     @Override
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
@@ -87,18 +90,28 @@ public class JwtServiceImpl implements JwtService {
 
 
     @Override
-    public boolean validateToken(String token, String email) {
-        boolean validUsername = extractCredentials(token).equals(email);
-        String key = TokenType.concatenate(email, TokenType.JWT);
+    public boolean validateToken(String token) {
+        try {
+            // Check if token email matches the passed email
+            String tokenEmail = extractClaim(token, Claims::getSubject);
 
-        // If the token has expired, or it is not in the list
-        if (isTokenExpired(token)) {
+            // Check expiration (This will throw if token is forged)
+            if (isTokenExpired(token)) {
+                return false;
+            }
+
+            // Check storage (Stateful check)
+            String key = TokenType.concatenate(tokenEmail, TokenType.JWT);
+            if (!tokenStorageService.isTokenValid(key)) {
+                return false;
+            }
+
+            return tokenStorageService.getToken(key).equals(token);
+
+        } catch (Exception e) {
+            // Catch SignatureException, MalformedJwtException, ExpiredJwtException
             return false;
         }
-        if (!tokenStorageService.isTokenValid(key)) {
-            return false;
-        }
-        return tokenStorageService.getToken(key).equals(token);
     }
 
     @Override

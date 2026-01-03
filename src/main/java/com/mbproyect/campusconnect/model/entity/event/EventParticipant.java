@@ -18,7 +18,7 @@ public class EventParticipant {
     @EqualsAndHashCode.Include
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @ManyToOne
@@ -27,5 +27,7 @@ public class EventParticipant {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    private UUID lastMessageIdSeen;
 
 }

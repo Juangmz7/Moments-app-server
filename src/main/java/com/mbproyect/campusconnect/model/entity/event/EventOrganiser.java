@@ -28,4 +28,6 @@ public class EventOrganiser {
 
     @OneToMany(mappedBy = "organiser")
     private Set<Event> events = new HashSet<>();
+
+    private UUID lastMessageSeen;
 }

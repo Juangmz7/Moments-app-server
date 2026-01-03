@@ -8,6 +8,7 @@ import com.mbproyect.campusconnect.model.entity.user.User;
 import com.mbproyect.campusconnect.service.event.EventOrganiserService;
 import com.mbproyect.campusconnect.service.user.UserService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -22,6 +23,7 @@ public class EventOrganiserServiceImpl implements EventOrganiserService {
         this.userService = userService;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public EventOrganiser getEventOrganiserByEmail(String email, Event event) {
         EventOrganiser organiser = eventOrganiserRepository.findByEmail(email);
@@ -34,6 +36,7 @@ public class EventOrganiserServiceImpl implements EventOrganiserService {
         return organiser;
     }
 
+    @Transactional
     @Override
     public EventOrganiser createEventOrganiser(String email, Event event) {
         User user = userService.findUserByEmail(email)

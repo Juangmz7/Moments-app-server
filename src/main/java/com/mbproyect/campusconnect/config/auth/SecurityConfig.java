@@ -6,7 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 import org.springframework.context.annotation.Bean;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -18,11 +20,8 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-
-    public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
+    public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     /**
@@ -33,25 +32,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .csrf(customizer -> customizer.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()// Authorized endpoints
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/validate-code",
                                 "/api/auth/activate-account",
                                 "/api/auth/refresh-token",
+                                "/api/auth/google",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**"
-                        ) // Authorized endpoints
-                        .permitAll()
+                                "/webjars/**",
+                                "/error"
+                        ).permitAll()
                         .anyRequest()
                         .authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2SuccessHandler)
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -74,8 +72,9 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Unauthorized or invalid token\"}");
+            response.getWriter().write("{\"error\": \"" + authException.getMessage() + "\"}");
         };
+
     }
 
 }

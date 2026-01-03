@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -15,7 +16,13 @@ public interface UserProfileService {
 
     UserProfileResponse getById(@NotNull UUID userProfileId);
 
-    UserProfileResponse update(@NotNull UUID userProfileId, @Valid UserProfileRequest request);
+    UserProfileResponse getByUsername(@NotNull String username);
+
+        UserProfileResponse update(
+            @NotNull UUID userProfileId,
+            @Valid UserProfileRequest request,
+            MultipartFile profileImage
+        );
 
     
 }

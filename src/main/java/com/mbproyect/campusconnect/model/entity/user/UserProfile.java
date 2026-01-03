@@ -3,7 +3,10 @@ package com.mbproyect.campusconnect.model.entity.user;
 import com.mbproyect.campusconnect.model.enums.InterestTag;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,6 +29,8 @@ public class UserProfile {
 
     private String nationality;
 
+    private String bio;
+
     @ElementCollection
     @CollectionTable(
             name = "user_languages",
@@ -40,11 +45,16 @@ public class UserProfile {
     @Column(name = "tag")
     private Set<InterestTag> interests;
 
+    @ElementCollection
+    @CollectionTable(name = "user_social_media", joinColumns = @JoinColumn(name = "user_profile_id"))
+    @MapKeyColumn(name = "platform_name")
+    @Column(name = "platform_username")
+    private Map<String, String> socialMedia;
+
     @Embedded
     private UserLocation userLocation;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    private byte[] profilePicture;
+    // Stores the filename/path of the uploaded profile picture
+    private String profilePicture;
 
 }
