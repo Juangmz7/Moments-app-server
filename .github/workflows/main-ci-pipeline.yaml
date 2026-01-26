@@ -38,11 +38,11 @@ jobs:
           cache: maven # Caches Maven dependencies to speed up future builds
 
       # Run tests first. If this fails, the pipeline stops and no image is built.
-      - name: Run Microservice Tests
+      - name: Run Tests
         run: mvn test -f pom.xml
 
       # Build the application JAR
-      - name: Package Service
+      - name: Package app
         run: mvn package -f pom.xml -DskipTests
 
       # Log in to Docker Hub only if this is a Push event (not a Pull Request)
