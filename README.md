@@ -2,19 +2,6 @@
 
 A robust Spring Boot backend API for the CampusConnect mobile application, enabling students to connect, create events, and participate in group chats.
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-- [Development](#development)
-
 ## 🌟 Overview
 
 CampusConnect is a campus social networking platform that provides REST APIs for user authentication, event management, real-time chat functionality, and user connections. The backend is built with Spring Boot and uses PostgreSQL for persistent storage and Redis for caching and session management.
